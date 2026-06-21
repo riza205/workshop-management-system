@@ -34,12 +34,15 @@ function AttendancePage() {
   const { data: employees = [] } = useQuery({
     queryKey: ["employees"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("employees").select("id,name,role").order("name");
+      const { data, error } = await supabase.from("employees").select("*").order("name");
       if (error) throw error;
-      if (data && data.length && !employeeId) setEmployeeId(data[0].id);
       return data as Employee[];
     },
   });
+
+  useEffect(() => {
+    if (!employeeId && employees.length) setEmployeeId(employees[0].id);
+  }, [employees, employeeId]);
 
   const monthStart = startOfMonth(month);
   const monthEnd = endOfMonth(month);
