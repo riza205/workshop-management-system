@@ -15,6 +15,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedEmployeesRouteImport } from './routes/_authenticated/employees'
 import { Route as AuthenticatedAttendanceRouteImport } from './routes/_authenticated/attendance'
 import { Route as AuthenticatedCarsIndexRouteImport } from './routes/_authenticated/cars.index'
+import { Route as AuthenticatedCarsCarIdRouteImport } from './routes/_authenticated/cars.$carId'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -45,12 +46,18 @@ const AuthenticatedCarsIndexRoute = AuthenticatedCarsIndexRouteImport.update({
   path: '/cars/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCarsCarIdRoute = AuthenticatedCarsCarIdRouteImport.update({
+  id: '/cars/$carId',
+  path: '/cars/$carId',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/attendance': typeof AuthenticatedAttendanceRoute
   '/employees': typeof AuthenticatedEmployeesRoute
+  '/cars/$carId': typeof AuthenticatedCarsCarIdRoute
   '/cars/': typeof AuthenticatedCarsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -58,6 +65,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/attendance': typeof AuthenticatedAttendanceRoute
   '/employees': typeof AuthenticatedEmployeesRoute
+  '/cars/$carId': typeof AuthenticatedCarsCarIdRoute
   '/cars': typeof AuthenticatedCarsIndexRoute
 }
 export interface FileRoutesById {
@@ -67,13 +75,20 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/attendance': typeof AuthenticatedAttendanceRoute
   '/_authenticated/employees': typeof AuthenticatedEmployeesRoute
+  '/_authenticated/cars/$carId': typeof AuthenticatedCarsCarIdRoute
   '/_authenticated/cars/': typeof AuthenticatedCarsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/attendance' | '/employees' | '/cars/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/attendance'
+    | '/employees'
+    | '/cars/$carId'
+    | '/cars/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/attendance' | '/employees' | '/cars'
+  to: '/' | '/auth' | '/attendance' | '/employees' | '/cars/$carId' | '/cars'
   id:
     | '__root__'
     | '/'
@@ -81,6 +96,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/attendance'
     | '/_authenticated/employees'
+    | '/_authenticated/cars/$carId'
     | '/_authenticated/cars/'
   fileRoutesById: FileRoutesById
 }
@@ -134,18 +150,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCarsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/cars/$carId': {
+      id: '/_authenticated/cars/$carId'
+      path: '/cars/$carId'
+      fullPath: '/cars/$carId'
+      preLoaderRoute: typeof AuthenticatedCarsCarIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAttendanceRoute: typeof AuthenticatedAttendanceRoute
   AuthenticatedEmployeesRoute: typeof AuthenticatedEmployeesRoute
+  AuthenticatedCarsCarIdRoute: typeof AuthenticatedCarsCarIdRoute
   AuthenticatedCarsIndexRoute: typeof AuthenticatedCarsIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAttendanceRoute: AuthenticatedAttendanceRoute,
   AuthenticatedEmployeesRoute: AuthenticatedEmployeesRoute,
+  AuthenticatedCarsCarIdRoute: AuthenticatedCarsCarIdRoute,
   AuthenticatedCarsIndexRoute: AuthenticatedCarsIndexRoute,
 }
 
