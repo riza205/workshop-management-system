@@ -486,6 +486,3 @@ function PhotosSection({ carId }: { carId: string }) {
     </Card>
   );
 }
-
-// silence unused import warning when no auto-removal happens
-void useEffect;
