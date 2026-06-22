@@ -59,6 +59,7 @@ function AppShell() {
           </Button>
         </div>
         <nav className="mx-auto flex max-w-6xl gap-2 overflow-x-auto px-4 pb-3">
+          {navItem("/cars", "Cars", Car)}
           {navItem("/employees", "Employees", Users)}
           {navItem("/attendance", "Attendance", CalendarDays)}
         </nav>
