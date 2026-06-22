@@ -52,6 +52,113 @@ export type Database = {
           },
         ]
       }
+      car_photos: {
+        Row: {
+          car_id: string
+          created_at: string
+          id: string
+          storage_path: string
+        }
+        Insert: {
+          car_id: string
+          created_at?: string
+          id?: string
+          storage_path: string
+        }
+        Update: {
+          car_id?: string
+          created_at?: string
+          id?: string
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "car_photos_car_id_fkey"
+            columns: ["car_id"]
+            isOneToOne: false
+            referencedRelation: "cars"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      car_tasks: {
+        Row: {
+          assigned_employee_id: string | null
+          car_id: string
+          created_at: string
+          description: string
+          done: boolean
+          id: string
+        }
+        Insert: {
+          assigned_employee_id?: string | null
+          car_id: string
+          created_at?: string
+          description: string
+          done?: boolean
+          id?: string
+        }
+        Update: {
+          assigned_employee_id?: string | null
+          car_id?: string
+          created_at?: string
+          description?: string
+          done?: boolean
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "car_tasks_assigned_employee_id_fkey"
+            columns: ["assigned_employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "car_tasks_car_id_fkey"
+            columns: ["car_id"]
+            isOneToOne: false
+            referencedRelation: "cars"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cars: {
+        Row: {
+          created_at: string
+          date_in: string
+          id: string
+          license_plate: string
+          make_model: string
+          owner_name: string
+          owner_phone: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          date_in: string
+          id?: string
+          license_plate: string
+          make_model: string
+          owner_name: string
+          owner_phone: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          date_in?: string
+          id?: string
+          license_plate?: string
+          make_model?: string
+          owner_name?: string
+          owner_phone?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       employees: {
         Row: {
           created_at: string

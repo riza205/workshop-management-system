@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, redirect, Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Wrench, Users, CalendarDays, LogOut } from "lucide-react";
+import { Wrench, Users, CalendarDays, LogOut, Car } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/_authenticated")({
@@ -59,6 +59,7 @@ function AppShell() {
           </Button>
         </div>
         <nav className="mx-auto flex max-w-6xl gap-2 overflow-x-auto px-4 pb-3">
+          {navItem("/cars", "Cars", Car)}
           {navItem("/employees", "Employees", Users)}
           {navItem("/attendance", "Attendance", CalendarDays)}
         </nav>
