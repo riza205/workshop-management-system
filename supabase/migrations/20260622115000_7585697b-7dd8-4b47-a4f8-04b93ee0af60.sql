@@ -1,0 +1,1 @@
+ALTER TABLE public.attendance ADD COLUMN IF NOT EXISTS check_in time, ADD COLUMN IF NOT EXISTS check_out time;
