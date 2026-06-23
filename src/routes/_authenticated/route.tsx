@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, redirect, Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Wrench, Users, CalendarDays, LogOut, Car, ClipboardList, LayoutDashboard } from "lucide-react";
+import { Wrench, Users, CalendarDays, LogOut, Car, ClipboardList, LayoutDashboard, FileText } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/_authenticated")({
@@ -61,6 +61,7 @@ function AppShell() {
         <nav className="mx-auto flex max-w-6xl gap-2 overflow-x-auto px-4 pb-3">
           {navItem("/dashboard", "Dashboard", LayoutDashboard)}
           {navItem("/cars", "Cars", Car)}
+          {navItem("/job-cards", "Job Cards", FileText)}
           {navItem("/employees", "Employees", Users)}
           {navItem("/attendance", "Attendance", CalendarDays)}
           {navItem("/workload", "Workload", ClipboardList)}

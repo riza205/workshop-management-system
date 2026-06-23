@@ -16,7 +16,9 @@ import { Route as AuthenticatedWorkloadRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedEmployeesRouteImport } from './routes/_authenticated/employees'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAttendanceRouteImport } from './routes/_authenticated/attendance'
+import { Route as AuthenticatedJobCardsIndexRouteImport } from './routes/_authenticated/job-cards.index'
 import { Route as AuthenticatedCarsIndexRouteImport } from './routes/_authenticated/cars.index'
+import { Route as AuthenticatedJobCardsJobIdRouteImport } from './routes/_authenticated/job-cards.$jobId'
 import { Route as AuthenticatedCarsCarIdRouteImport } from './routes/_authenticated/cars.$carId'
 
 const AuthRoute = AuthRouteImport.update({
@@ -53,11 +55,23 @@ const AuthenticatedAttendanceRoute = AuthenticatedAttendanceRouteImport.update({
   path: '/attendance',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedJobCardsIndexRoute =
+  AuthenticatedJobCardsIndexRouteImport.update({
+    id: '/job-cards/',
+    path: '/job-cards/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCarsIndexRoute = AuthenticatedCarsIndexRouteImport.update({
   id: '/cars/',
   path: '/cars/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedJobCardsJobIdRoute =
+  AuthenticatedJobCardsJobIdRouteImport.update({
+    id: '/job-cards/$jobId',
+    path: '/job-cards/$jobId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCarsCarIdRoute = AuthenticatedCarsCarIdRouteImport.update({
   id: '/cars/$carId',
   path: '/cars/$carId',
@@ -72,7 +86,9 @@ export interface FileRoutesByFullPath {
   '/employees': typeof AuthenticatedEmployeesRoute
   '/workload': typeof AuthenticatedWorkloadRoute
   '/cars/$carId': typeof AuthenticatedCarsCarIdRoute
+  '/job-cards/$jobId': typeof AuthenticatedJobCardsJobIdRoute
   '/cars/': typeof AuthenticatedCarsIndexRoute
+  '/job-cards/': typeof AuthenticatedJobCardsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -82,7 +98,9 @@ export interface FileRoutesByTo {
   '/employees': typeof AuthenticatedEmployeesRoute
   '/workload': typeof AuthenticatedWorkloadRoute
   '/cars/$carId': typeof AuthenticatedCarsCarIdRoute
+  '/job-cards/$jobId': typeof AuthenticatedJobCardsJobIdRoute
   '/cars': typeof AuthenticatedCarsIndexRoute
+  '/job-cards': typeof AuthenticatedJobCardsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -94,7 +112,9 @@ export interface FileRoutesById {
   '/_authenticated/employees': typeof AuthenticatedEmployeesRoute
   '/_authenticated/workload': typeof AuthenticatedWorkloadRoute
   '/_authenticated/cars/$carId': typeof AuthenticatedCarsCarIdRoute
+  '/_authenticated/job-cards/$jobId': typeof AuthenticatedJobCardsJobIdRoute
   '/_authenticated/cars/': typeof AuthenticatedCarsIndexRoute
+  '/_authenticated/job-cards/': typeof AuthenticatedJobCardsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -106,7 +126,9 @@ export interface FileRouteTypes {
     | '/employees'
     | '/workload'
     | '/cars/$carId'
+    | '/job-cards/$jobId'
     | '/cars/'
+    | '/job-cards/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -116,7 +138,9 @@ export interface FileRouteTypes {
     | '/employees'
     | '/workload'
     | '/cars/$carId'
+    | '/job-cards/$jobId'
     | '/cars'
+    | '/job-cards'
   id:
     | '__root__'
     | '/'
@@ -127,7 +151,9 @@ export interface FileRouteTypes {
     | '/_authenticated/employees'
     | '/_authenticated/workload'
     | '/_authenticated/cars/$carId'
+    | '/_authenticated/job-cards/$jobId'
     | '/_authenticated/cars/'
+    | '/_authenticated/job-cards/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -187,11 +213,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAttendanceRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/job-cards/': {
+      id: '/_authenticated/job-cards/'
+      path: '/job-cards'
+      fullPath: '/job-cards/'
+      preLoaderRoute: typeof AuthenticatedJobCardsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/cars/': {
       id: '/_authenticated/cars/'
       path: '/cars'
       fullPath: '/cars/'
       preLoaderRoute: typeof AuthenticatedCarsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/job-cards/$jobId': {
+      id: '/_authenticated/job-cards/$jobId'
+      path: '/job-cards/$jobId'
+      fullPath: '/job-cards/$jobId'
+      preLoaderRoute: typeof AuthenticatedJobCardsJobIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/cars/$carId': {
@@ -210,7 +250,9 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedEmployeesRoute: typeof AuthenticatedEmployeesRoute
   AuthenticatedWorkloadRoute: typeof AuthenticatedWorkloadRoute
   AuthenticatedCarsCarIdRoute: typeof AuthenticatedCarsCarIdRoute
+  AuthenticatedJobCardsJobIdRoute: typeof AuthenticatedJobCardsJobIdRoute
   AuthenticatedCarsIndexRoute: typeof AuthenticatedCarsIndexRoute
+  AuthenticatedJobCardsIndexRoute: typeof AuthenticatedJobCardsIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -219,7 +261,9 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedEmployeesRoute: AuthenticatedEmployeesRoute,
   AuthenticatedWorkloadRoute: AuthenticatedWorkloadRoute,
   AuthenticatedCarsCarIdRoute: AuthenticatedCarsCarIdRoute,
+  AuthenticatedJobCardsJobIdRoute: AuthenticatedJobCardsJobIdRoute,
   AuthenticatedCarsIndexRoute: AuthenticatedCarsIndexRoute,
+  AuthenticatedJobCardsIndexRoute: AuthenticatedJobCardsIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
