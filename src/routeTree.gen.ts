@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedWorkloadRouteImport } from './routes/_authenticated/workload'
 import { Route as AuthenticatedEmployeesRouteImport } from './routes/_authenticated/employees'
 import { Route as AuthenticatedAttendanceRouteImport } from './routes/_authenticated/attendance'
 import { Route as AuthenticatedCarsIndexRouteImport } from './routes/_authenticated/cars.index'
@@ -30,6 +31,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedWorkloadRoute = AuthenticatedWorkloadRouteImport.update({
+  id: '/workload',
+  path: '/workload',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedEmployeesRoute = AuthenticatedEmployeesRouteImport.update({
   id: '/employees',
@@ -57,6 +63,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/attendance': typeof AuthenticatedAttendanceRoute
   '/employees': typeof AuthenticatedEmployeesRoute
+  '/workload': typeof AuthenticatedWorkloadRoute
   '/cars/$carId': typeof AuthenticatedCarsCarIdRoute
   '/cars/': typeof AuthenticatedCarsIndexRoute
 }
@@ -65,6 +72,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/attendance': typeof AuthenticatedAttendanceRoute
   '/employees': typeof AuthenticatedEmployeesRoute
+  '/workload': typeof AuthenticatedWorkloadRoute
   '/cars/$carId': typeof AuthenticatedCarsCarIdRoute
   '/cars': typeof AuthenticatedCarsIndexRoute
 }
@@ -75,6 +83,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/attendance': typeof AuthenticatedAttendanceRoute
   '/_authenticated/employees': typeof AuthenticatedEmployeesRoute
+  '/_authenticated/workload': typeof AuthenticatedWorkloadRoute
   '/_authenticated/cars/$carId': typeof AuthenticatedCarsCarIdRoute
   '/_authenticated/cars/': typeof AuthenticatedCarsIndexRoute
 }
@@ -85,10 +94,18 @@ export interface FileRouteTypes {
     | '/auth'
     | '/attendance'
     | '/employees'
+    | '/workload'
     | '/cars/$carId'
     | '/cars/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/attendance' | '/employees' | '/cars/$carId' | '/cars'
+  to:
+    | '/'
+    | '/auth'
+    | '/attendance'
+    | '/employees'
+    | '/workload'
+    | '/cars/$carId'
+    | '/cars'
   id:
     | '__root__'
     | '/'
@@ -96,6 +113,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/attendance'
     | '/_authenticated/employees'
+    | '/_authenticated/workload'
     | '/_authenticated/cars/$carId'
     | '/_authenticated/cars/'
   fileRoutesById: FileRoutesById
@@ -128,6 +146,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/workload': {
+      id: '/_authenticated/workload'
+      path: '/workload'
+      fullPath: '/workload'
+      preLoaderRoute: typeof AuthenticatedWorkloadRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/employees': {
       id: '/_authenticated/employees'
@@ -163,6 +188,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAttendanceRoute: typeof AuthenticatedAttendanceRoute
   AuthenticatedEmployeesRoute: typeof AuthenticatedEmployeesRoute
+  AuthenticatedWorkloadRoute: typeof AuthenticatedWorkloadRoute
   AuthenticatedCarsCarIdRoute: typeof AuthenticatedCarsCarIdRoute
   AuthenticatedCarsIndexRoute: typeof AuthenticatedCarsIndexRoute
 }
@@ -170,6 +196,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAttendanceRoute: AuthenticatedAttendanceRoute,
   AuthenticatedEmployeesRoute: AuthenticatedEmployeesRoute,
+  AuthenticatedWorkloadRoute: AuthenticatedWorkloadRoute,
   AuthenticatedCarsCarIdRoute: AuthenticatedCarsCarIdRoute,
   AuthenticatedCarsIndexRoute: AuthenticatedCarsIndexRoute,
 }
