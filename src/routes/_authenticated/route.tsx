@@ -61,6 +61,7 @@ function AppShell() {
         <nav className="mx-auto flex max-w-6xl gap-2 overflow-x-auto px-4 pb-3">
           {navItem("/dashboard", "Dashboard", LayoutDashboard)}
           {navItem("/cars", "Cars", Car)}
+          {navItem("/job-cards", "Job Cards", FileText)}
           {navItem("/employees", "Employees", Users)}
           {navItem("/attendance", "Attendance", CalendarDays)}
           {navItem("/workload", "Workload", ClipboardList)}
