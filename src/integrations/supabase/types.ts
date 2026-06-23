@@ -186,6 +186,139 @@ export type Database = {
         }
         Relationships: []
       }
+      job_card_photos: {
+        Row: {
+          created_at: string
+          id: string
+          job_card_id: string
+          storage_path: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          job_card_id: string
+          storage_path: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          job_card_id?: string
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_card_photos_job_card_id_fkey"
+            columns: ["job_card_id"]
+            isOneToOne: false
+            referencedRelation: "job_cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_cards: {
+        Row: {
+          assigned_date: string | null
+          assigned_technician_id: string | null
+          complaint: string | null
+          created_at: string
+          customer_address: string | null
+          customer_approval: boolean
+          customer_email: string | null
+          customer_name: string
+          customer_phone: string
+          delivery_date: string | null
+          estimated_labour_cost: number | null
+          estimated_parts_cost: number | null
+          final_bill_amount: number | null
+          final_labour_charge: number | null
+          fuel_level: number | null
+          id: string
+          job_date: string
+          job_number: string
+          job_time: string
+          mileage_km: number | null
+          parts_used: string | null
+          status: string
+          updated_at: string
+          vehicle_brand: string | null
+          vehicle_model: string | null
+          vehicle_reg: string
+          vehicle_year: number | null
+          vin: string | null
+          work_done: string | null
+        }
+        Insert: {
+          assigned_date?: string | null
+          assigned_technician_id?: string | null
+          complaint?: string | null
+          created_at?: string
+          customer_address?: string | null
+          customer_approval?: boolean
+          customer_email?: string | null
+          customer_name: string
+          customer_phone: string
+          delivery_date?: string | null
+          estimated_labour_cost?: number | null
+          estimated_parts_cost?: number | null
+          final_bill_amount?: number | null
+          final_labour_charge?: number | null
+          fuel_level?: number | null
+          id?: string
+          job_date?: string
+          job_number?: string
+          job_time?: string
+          mileage_km?: number | null
+          parts_used?: string | null
+          status?: string
+          updated_at?: string
+          vehicle_brand?: string | null
+          vehicle_model?: string | null
+          vehicle_reg: string
+          vehicle_year?: number | null
+          vin?: string | null
+          work_done?: string | null
+        }
+        Update: {
+          assigned_date?: string | null
+          assigned_technician_id?: string | null
+          complaint?: string | null
+          created_at?: string
+          customer_address?: string | null
+          customer_approval?: boolean
+          customer_email?: string | null
+          customer_name?: string
+          customer_phone?: string
+          delivery_date?: string | null
+          estimated_labour_cost?: number | null
+          estimated_parts_cost?: number | null
+          final_bill_amount?: number | null
+          final_labour_charge?: number | null
+          fuel_level?: number | null
+          id?: string
+          job_date?: string
+          job_number?: string
+          job_time?: string
+          mileage_km?: number | null
+          parts_used?: string | null
+          status?: string
+          updated_at?: string
+          vehicle_brand?: string | null
+          vehicle_model?: string | null
+          vehicle_reg?: string
+          vehicle_year?: number | null
+          vin?: string | null
+          work_done?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_cards_assigned_technician_id_fkey"
+            columns: ["assigned_technician_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
