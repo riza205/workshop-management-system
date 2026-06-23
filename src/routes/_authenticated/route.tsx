@@ -62,6 +62,7 @@ function AppShell() {
           {navItem("/cars", "Cars", Car)}
           {navItem("/employees", "Employees", Users)}
           {navItem("/attendance", "Attendance", CalendarDays)}
+          {navItem("/workload", "Workload", ClipboardList)}
         </nav>
       </header>
       <main className="mx-auto max-w-6xl px-4 py-6">
