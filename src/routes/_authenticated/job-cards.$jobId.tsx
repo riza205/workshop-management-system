@@ -379,11 +379,12 @@ function JobCardDetailPage() {
       {/* Printable view */}
       <PrintableJobCard form={form} totalEstimate={totalEstimate} techName={techName} photoUrls={photoUrls.map((p) => p.url)} />
 
-      <Dialog open={!!viewPhoto} onOpenChange={(o) => !o && setViewPhoto(null)}>
-        <DialogContent className="max-w-3xl p-2">
-          {viewPhoto && <img src={viewPhoto} alt="" className="max-h-[80vh] w-full object-contain" />}
-        </DialogContent>
-      </Dialog>
+      <Lightbox
+        photos={photoUrls.map((p) => p.url)}
+        index={viewIndex}
+        onClose={() => setViewIndex(null)}
+        onChange={setViewIndex}
+      />
 
       <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
         <AlertDialogContent>
