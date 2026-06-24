@@ -354,7 +354,7 @@ function JobCardDetailPage() {
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
                   {photoUrls.map((p) => (
                     <div key={p.id} className="group relative aspect-square overflow-hidden rounded-lg border bg-muted">
-                      <img src={p.url} alt="" className="h-full w-full cursor-pointer object-cover" onClick={() => setViewPhoto(p.url)} />
+                      <img src={p.url} alt="" className="h-full w-full cursor-pointer object-cover" onClick={() => setViewIndex(photoUrls.findIndex((x) => x.id === p.id))} />
                       <button onClick={() => deletePhoto(p)} className="absolute right-1 top-1 rounded-md bg-black/60 p-1 text-white opacity-0 transition group-hover:opacity-100" aria-label="Delete">
                         <Trash2 className="h-4 w-4" />
                       </button>
