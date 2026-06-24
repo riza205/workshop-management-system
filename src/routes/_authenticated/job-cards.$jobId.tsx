@@ -10,12 +10,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ArrowLeft, Save, Printer, Download, Trash2, Upload, ImageOff, Wrench, Fuel } from "lucide-react";
+import { ArrowLeft, Save, Printer, Download, Trash2, Upload, ImageOff, Wrench, Fuel, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { compressImage } from "@/lib/image-compress";
@@ -66,7 +66,7 @@ function JobCardDetailPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
-  const [viewPhoto, setViewPhoto] = useState<string | null>(null);
+  const [viewIndex, setViewIndex] = useState<number | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [form, setForm] = useState<JobCard | null>(null);
 
@@ -354,7 +354,7 @@ function JobCardDetailPage() {
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
                   {photoUrls.map((p) => (
                     <div key={p.id} className="group relative aspect-square overflow-hidden rounded-lg border bg-muted">
-                      <img src={p.url} alt="" className="h-full w-full cursor-pointer object-cover" onClick={() => setViewPhoto(p.url)} />
+                      <img src={p.url} alt="" className="h-full w-full cursor-pointer object-cover" onClick={() => setViewIndex(photoUrls.findIndex((x) => x.id === p.id))} />
                       <button onClick={() => deletePhoto(p)} className="absolute right-1 top-1 rounded-md bg-black/60 p-1 text-white opacity-0 transition group-hover:opacity-100" aria-label="Delete">
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -379,11 +379,12 @@ function JobCardDetailPage() {
       {/* Printable view */}
       <PrintableJobCard form={form} totalEstimate={totalEstimate} techName={techName} photoUrls={photoUrls.map((p) => p.url)} />
 
-      <Dialog open={!!viewPhoto} onOpenChange={(o) => !o && setViewPhoto(null)}>
-        <DialogContent className="max-w-3xl p-2">
-          {viewPhoto && <img src={viewPhoto} alt="" className="max-h-[80vh] w-full object-contain" />}
-        </DialogContent>
-      </Dialog>
+      <Lightbox
+        photos={photoUrls.map((p) => p.url)}
+        index={viewIndex}
+        onClose={() => setViewIndex(null)}
+        onChange={setViewIndex}
+      />
 
       <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
         <AlertDialogContent>
@@ -406,6 +407,75 @@ function Field({ label, children, full }: { label: string; children: React.React
     <div className={`space-y-1.5 ${full ? "sm:col-span-2 lg:col-span-3" : ""}`}>
       <Label className="text-sm font-medium">{label}</Label>
       {children}
+    </div>
+  );
+}
+
+function Lightbox({
+  photos, index, onClose, onChange,
+}: {
+  photos: string[];
+  index: number | null;
+  onClose: () => void;
+  onChange: (i: number) => void;
+}) {
+  const open = index !== null && index >= 0 && index < photos.length;
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowLeft" && index! > 0) onChange(index! - 1);
+      if (e.key === "ArrowRight" && index! < photos.length - 1) onChange(index! + 1);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, index, photos.length, onClose, onChange]);
+
+  if (!open) return null;
+  const i = index!;
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+    >
+      <button
+        onClick={(e) => { e.stopPropagation(); onClose(); }}
+        className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white hover:bg-white/20"
+        aria-label="Close"
+      >
+        <X className="h-6 w-6" />
+      </button>
+      {i > 0 && (
+        <button
+          onClick={(e) => { e.stopPropagation(); onChange(i - 1); }}
+          className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-2 text-white hover:bg-white/20"
+          aria-label="Previous"
+        >
+          <ChevronLeft className="h-7 w-7" />
+        </button>
+      )}
+      {i < photos.length - 1 && (
+        <button
+          onClick={(e) => { e.stopPropagation(); onChange(i + 1); }}
+          className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-2 text-white hover:bg-white/20"
+          aria-label="Next"
+        >
+          <ChevronRight className="h-7 w-7" />
+        </button>
+      )}
+      <img
+        src={photos[i]}
+        alt=""
+        onClick={(e) => e.stopPropagation()}
+        className="max-h-[90vh] max-w-[92vw] object-contain"
+      />
+      {photos.length > 1 && (
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-white/10 px-3 py-1 text-sm text-white">
+          {i + 1} / {photos.length}
+        </div>
+      )}
     </div>
   );
 }
