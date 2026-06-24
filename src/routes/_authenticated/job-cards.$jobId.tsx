@@ -102,12 +102,18 @@ function JobCardDetailPage() {
     },
   });
 
-  const photoUrls = useMemo(() => {
-    return photos.map((p) => ({
-      ...p,
-      url: supabase.storage.from("car-photos").getPublicUrl(p.storage_path).data.publicUrl,
-    }));
-  }, [photos]);
+  const { data: photoUrls = [] } = useQuery({
+    queryKey: ["job_card_photo_urls", jobId, photos.map((p) => p.id).join(",")],
+    enabled: photos.length > 0,
+    queryFn: async () => {
+      const paths = photos.map((p) => p.storage_path);
+      const { data, error } = await supabase.storage
+        .from("car-photos")
+        .createSignedUrls(paths, 60 * 60);
+      if (error) throw error;
+      return photos.map((p, i) => ({ ...p, url: data?.[i]?.signedUrl ?? "" }));
+    },
+  });
 
   const saveMut = useMutation({
     mutationFn: async (patch: Partial<JobCard>) => {
