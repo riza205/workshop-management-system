@@ -15,7 +15,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ArrowLeft, Save, Printer, Download, Trash2, Upload, ImageOff, Wrench, Fuel } from "lucide-react";
+import { ArrowLeft, Save, Printer, Download, Trash2, Upload, ImageOff, Wrench, Fuel, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { compressImage } from "@/lib/image-compress";
