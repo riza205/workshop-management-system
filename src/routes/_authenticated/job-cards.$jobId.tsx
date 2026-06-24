@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -102,12 +102,18 @@ function JobCardDetailPage() {
     },
   });
 
-  const photoUrls = useMemo(() => {
-    return photos.map((p) => ({
-      ...p,
-      url: supabase.storage.from("car-photos").getPublicUrl(p.storage_path).data.publicUrl,
-    }));
-  }, [photos]);
+  const { data: photoUrls = [] } = useQuery({
+    queryKey: ["job_card_photo_urls", jobId, photos.map((p) => p.id).join(",")],
+    enabled: photos.length > 0,
+    queryFn: async () => {
+      const paths = photos.map((p) => p.storage_path);
+      const { data, error } = await supabase.storage
+        .from("car-photos")
+        .createSignedUrls(paths, 60 * 60);
+      if (error) throw error;
+      return photos.map((p, i) => ({ ...p, url: data?.[i]?.signedUrl ?? "" }));
+    },
+  });
 
   const saveMut = useMutation({
     mutationFn: async (patch: Partial<JobCard>) => {
@@ -465,18 +471,38 @@ function Lightbox({
           <ChevronRight className="h-7 w-7" />
         </button>
       )}
-      <img
-        src={photos[i]}
-        alt=""
-        onClick={(e) => e.stopPropagation()}
-        className="max-h-[90vh] max-w-[92vw] object-contain"
-      />
+      <LightboxImage src={photos[i]} />
       {photos.length > 1 && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-white/10 px-3 py-1 text-sm text-white">
           {i + 1} / {photos.length}
         </div>
       )}
     </div>
+  );
+}
+
+function LightboxImage({ src }: { src: string }) {
+  const [errored, setErrored] = useState(false);
+  useEffect(() => { setErrored(false); }, [src]);
+  if (!src || errored) {
+    return (
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="flex flex-col items-center gap-2 rounded-md bg-white/5 px-8 py-12 text-white"
+      >
+        <ImageOff className="h-10 w-10 opacity-70" />
+        <p className="text-sm">Image could not be loaded</p>
+      </div>
+    );
+  }
+  return (
+    <img
+      src={src}
+      alt=""
+      onClick={(e) => e.stopPropagation()}
+      onError={() => setErrored(true)}
+      className="max-h-[90vh] max-w-[92vw] object-contain"
+    />
   );
 }
 
