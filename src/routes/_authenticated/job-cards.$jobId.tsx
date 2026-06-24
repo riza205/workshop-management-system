@@ -411,6 +411,75 @@ function Field({ label, children, full }: { label: string; children: React.React
   );
 }
 
+function Lightbox({
+  photos, index, onClose, onChange,
+}: {
+  photos: string[];
+  index: number | null;
+  onClose: () => void;
+  onChange: (i: number) => void;
+}) {
+  const open = index !== null && index >= 0 && index < photos.length;
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowLeft" && index! > 0) onChange(index! - 1);
+      if (e.key === "ArrowRight" && index! < photos.length - 1) onChange(index! + 1);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, index, photos.length, onClose, onChange]);
+
+  if (!open) return null;
+  const i = index!;
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+    >
+      <button
+        onClick={(e) => { e.stopPropagation(); onClose(); }}
+        className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white hover:bg-white/20"
+        aria-label="Close"
+      >
+        <X className="h-6 w-6" />
+      </button>
+      {i > 0 && (
+        <button
+          onClick={(e) => { e.stopPropagation(); onChange(i - 1); }}
+          className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-2 text-white hover:bg-white/20"
+          aria-label="Previous"
+        >
+          <ChevronLeft className="h-7 w-7" />
+        </button>
+      )}
+      {i < photos.length - 1 && (
+        <button
+          onClick={(e) => { e.stopPropagation(); onChange(i + 1); }}
+          className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-2 text-white hover:bg-white/20"
+          aria-label="Next"
+        >
+          <ChevronRight className="h-7 w-7" />
+        </button>
+      )}
+      <img
+        src={photos[i]}
+        alt=""
+        onClick={(e) => e.stopPropagation()}
+        className="max-h-[90vh] max-w-[92vw] object-contain"
+      />
+      {photos.length > 1 && (
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-white/10 px-3 py-1 text-sm text-white">
+          {i + 1} / {photos.length}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function PrintableJobCard({
   form, totalEstimate, techName, photoUrls,
 }: {
