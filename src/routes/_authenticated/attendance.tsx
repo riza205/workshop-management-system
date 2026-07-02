@@ -154,6 +154,7 @@ function AttendancePage() {
       status: "present" | "absent";
       check_in: string | null;
       check_out: string | null;
+      amount_taken: number;
     }) => {
       const dateStr = format(input.date, "yyyy-MM-dd");
       const payload = {
@@ -162,6 +163,7 @@ function AttendancePage() {
         status: input.status,
         check_in: input.status === "present" ? input.check_in : null,
         check_out: input.status === "present" ? input.check_out : null,
+        amount_taken: input.status === "present" ? input.amount_taken : 0,
       };
       const { error } = await supabase
         .from("attendance")
