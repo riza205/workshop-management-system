@@ -423,10 +423,11 @@ function AttendancePage() {
   );
 }
 
-function Stat({ label, value, tone, big }: { label: string; value: number; tone: "success" | "danger" | "muted"; big?: boolean }) {
+function Stat({ label, value, tone, big }: { label: string; value: number | string; tone: "success" | "danger" | "muted" | "primary"; big?: boolean }) {
   const toneCls =
     tone === "success" ? "text-[var(--color-success)]" :
     tone === "danger" ? "text-[var(--color-danger)]" :
+    tone === "primary" ? "text-[var(--color-primary)]" :
     "text-foreground";
   return (
     <div className="rounded-lg border bg-card p-3 sm:p-4">
