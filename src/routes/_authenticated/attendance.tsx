@@ -30,6 +30,7 @@ type Attendance = {
   status: "present" | "absent";
   check_in: string | null;
   check_out: string | null;
+  amount_taken: number | null;
 };
 
 export const Route = createFileRoute("/_authenticated/attendance")({
