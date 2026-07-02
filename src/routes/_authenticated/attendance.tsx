@@ -83,6 +83,7 @@ function AttendancePage() {
   const [draftStatus, setDraftStatus] = useState<"present" | "absent">("present");
   const [draftCheckIn, setDraftCheckIn] = useState<string>("");
   const [draftCheckOut, setDraftCheckOut] = useState<string>("");
+  const [draftAmount, setDraftAmount] = useState<string>("");
 
   const { data: employees = [] } = useQuery({
     queryKey: ["employees"],
