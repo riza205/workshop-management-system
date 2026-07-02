@@ -244,11 +244,12 @@ function AttendancePage() {
               </div>
             </div>
 
-            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
               <Stat label="Absent days" value={absentCount} tone="danger" big />
               <Stat label="Present days" value={presentCount} tone="success" />
               <Stat label="Unmarked" value={days.length - records.length} tone="muted" />
               <Stat label="Days in month" value={days.length} tone="muted" />
+              <Stat label="Total advance" value={`₹${totalAdvance.toLocaleString("en-IN")}`} tone="primary" />
             </div>
           </CardContent>
         </Card>
