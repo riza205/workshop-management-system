@@ -30,6 +30,7 @@ type Attendance = {
   status: "present" | "absent";
   check_in: string | null;
   check_out: string | null;
+  amount_taken: number | null;
 };
 
 export const Route = createFileRoute("/_authenticated/attendance")({
@@ -82,6 +83,7 @@ function AttendancePage() {
   const [draftStatus, setDraftStatus] = useState<"present" | "absent">("present");
   const [draftCheckIn, setDraftCheckIn] = useState<string>("");
   const [draftCheckOut, setDraftCheckOut] = useState<string>("");
+  const [draftAmount, setDraftAmount] = useState<string>("");
 
   const { data: employees = [] } = useQuery({
     queryKey: ["employees"],
@@ -123,6 +125,7 @@ function AttendancePage() {
 
   const absentCount = records.filter((r) => r.status === "absent").length;
   const presentCount = records.filter((r) => r.status === "present").length;
+  const totalAdvance = records.reduce((sum, r) => sum + (Number(r.amount_taken) || 0), 0);
 
   const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
   const leadingBlanks = getDay(monthStart);
@@ -136,10 +139,12 @@ function AttendancePage() {
       setDraftStatus(currentRecord.status);
       setDraftCheckIn(normalizeTime(currentRecord.check_in) ?? "");
       setDraftCheckOut(normalizeTime(currentRecord.check_out) ?? "");
+      setDraftAmount(currentRecord.amount_taken ? String(currentRecord.amount_taken) : "");
     } else {
       setDraftStatus("present");
       setDraftCheckIn("");
       setDraftCheckOut("");
+      setDraftAmount("");
     }
   }, [selectedDate, currentRecord]);
 
@@ -149,6 +154,7 @@ function AttendancePage() {
       status: "present" | "absent";
       check_in: string | null;
       check_out: string | null;
+      amount_taken: number;
     }) => {
       const dateStr = format(input.date, "yyyy-MM-dd");
       const payload = {
@@ -157,6 +163,7 @@ function AttendancePage() {
         status: input.status,
         check_in: input.status === "present" ? input.check_in : null,
         check_out: input.status === "present" ? input.check_out : null,
+        amount_taken: input.status === "present" ? input.amount_taken : 0,
       };
       const { error } = await supabase
         .from("attendance")
@@ -237,11 +244,12 @@ function AttendancePage() {
               </div>
             </div>
 
-            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
               <Stat label="Absent days" value={absentCount} tone="danger" big />
               <Stat label="Present days" value={presentCount} tone="success" />
               <Stat label="Unmarked" value={days.length - records.length} tone="muted" />
               <Stat label="Days in month" value={days.length} tone="muted" />
+              <Stat label="Total advance" value={`₹${totalAdvance.toLocaleString("en-IN")}`} tone="primary" />
             </div>
           </CardContent>
         </Card>
@@ -370,6 +378,21 @@ function AttendancePage() {
                     />
                   </div>
                 </div>
+                <div>
+                  <Label htmlFor="amount-taken" className="text-sm font-medium">Amount taken (₹)</Label>
+                  <Input
+                    id="amount-taken"
+                    type="number"
+                    inputMode="decimal"
+                    min="0"
+                    step="1"
+                    placeholder="0"
+                    value={draftAmount}
+                    onChange={(e) => setDraftAmount(e.target.value)}
+                    disabled={draftStatus === "absent"}
+                    className="mt-1 h-12 text-base"
+                  />
+                </div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Total hours worked</span>
                   <span className="font-semibold text-foreground">
@@ -401,6 +424,7 @@ function AttendancePage() {
                     status: draftStatus,
                     check_in: draftCheckIn || null,
                     check_out: draftCheckOut || null,
+                    amount_taken: Number(draftAmount) || 0,
                   })
                 }
                 disabled={upsert.isPending}
@@ -415,10 +439,11 @@ function AttendancePage() {
   );
 }
 
-function Stat({ label, value, tone, big }: { label: string; value: number; tone: "success" | "danger" | "muted"; big?: boolean }) {
+function Stat({ label, value, tone, big }: { label: string; value: number | string; tone: "success" | "danger" | "muted" | "primary"; big?: boolean }) {
   const toneCls =
     tone === "success" ? "text-[var(--color-success)]" :
     tone === "danger" ? "text-[var(--color-danger)]" :
+    tone === "primary" ? "text-[var(--color-primary)]" :
     "text-foreground";
   return (
     <div className="rounded-lg border bg-card p-3 sm:p-4">
