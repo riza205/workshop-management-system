@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       attendance: {
         Row: {
+          amount_taken: number
           check_in: string | null
           check_out: string | null
           created_at: string
@@ -25,6 +26,7 @@ export type Database = {
           status: string
         }
         Insert: {
+          amount_taken?: number
           check_in?: string | null
           check_out?: string | null
           created_at?: string
@@ -34,6 +36,7 @@ export type Database = {
           status: string
         }
         Update: {
+          amount_taken?: number
           check_in?: string | null
           check_out?: string | null
           created_at?: string

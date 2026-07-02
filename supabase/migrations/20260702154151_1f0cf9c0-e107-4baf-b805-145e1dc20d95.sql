@@ -1,0 +1,1 @@
+ALTER TABLE public.attendance ADD COLUMN IF NOT EXISTS amount_taken numeric NOT NULL DEFAULT 0;
