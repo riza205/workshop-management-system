@@ -424,6 +424,7 @@ function AttendancePage() {
                     status: draftStatus,
                     check_in: draftCheckIn || null,
                     check_out: draftCheckOut || null,
+                    amount_taken: Number(draftAmount) || 0,
                   })
                 }
                 disabled={upsert.isPending}
