@@ -125,6 +125,7 @@ function AttendancePage() {
 
   const absentCount = records.filter((r) => r.status === "absent").length;
   const presentCount = records.filter((r) => r.status === "present").length;
+  const totalAdvance = records.reduce((sum, r) => sum + (Number(r.amount_taken) || 0), 0);
 
   const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
   const leadingBlanks = getDay(monthStart);
@@ -138,10 +139,12 @@ function AttendancePage() {
       setDraftStatus(currentRecord.status);
       setDraftCheckIn(normalizeTime(currentRecord.check_in) ?? "");
       setDraftCheckOut(normalizeTime(currentRecord.check_out) ?? "");
+      setDraftAmount(currentRecord.amount_taken ? String(currentRecord.amount_taken) : "");
     } else {
       setDraftStatus("present");
       setDraftCheckIn("");
       setDraftCheckOut("");
+      setDraftAmount("");
     }
   }, [selectedDate, currentRecord]);
 
