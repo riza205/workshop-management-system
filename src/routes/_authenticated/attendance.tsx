@@ -378,6 +378,21 @@ function AttendancePage() {
                     />
                   </div>
                 </div>
+                <div>
+                  <Label htmlFor="amount-taken" className="text-sm font-medium">Amount taken (₹)</Label>
+                  <Input
+                    id="amount-taken"
+                    type="number"
+                    inputMode="decimal"
+                    min="0"
+                    step="1"
+                    placeholder="0"
+                    value={draftAmount}
+                    onChange={(e) => setDraftAmount(e.target.value)}
+                    disabled={draftStatus === "absent"}
+                    className="mt-1 h-12 text-base"
+                  />
+                </div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Total hours worked</span>
                   <span className="font-semibold text-foreground">
