@@ -220,8 +220,14 @@ export type Database = {
       }
       job_cards: {
         Row: {
+          actual_cost: number | null
+          additional_jobs: string | null
+          advance_amount: number | null
           assigned_date: string | null
           assigned_technician_id: string | null
+          body_damage_notes: string | null
+          chassis_no: string | null
+          checklist: Json
           complaint: string | null
           created_at: string
           customer_address: string | null
@@ -230,18 +236,26 @@ export type Database = {
           customer_name: string
           customer_phone: string
           delivery_date: string | null
+          delivery_promised: string | null
+          engine_no: string | null
           estimated_labour_cost: number | null
           estimated_parts_cost: number | null
           final_bill_amount: number | null
           final_labour_charge: number | null
           fuel_level: number | null
+          fuel_qty: string | null
           id: string
           job_date: string
           job_number: string
           job_time: string
+          labour_items: Json
           mileage_km: number | null
           parts_used: string | null
+          primary_jobs: string | null
+          secondary_jobs: string | null
+          spares: Json
           status: string
+          technical_advice: string | null
           updated_at: string
           vehicle_brand: string | null
           vehicle_model: string | null
@@ -251,8 +265,14 @@ export type Database = {
           work_done: string | null
         }
         Insert: {
+          actual_cost?: number | null
+          additional_jobs?: string | null
+          advance_amount?: number | null
           assigned_date?: string | null
           assigned_technician_id?: string | null
+          body_damage_notes?: string | null
+          chassis_no?: string | null
+          checklist?: Json
           complaint?: string | null
           created_at?: string
           customer_address?: string | null
@@ -261,18 +281,26 @@ export type Database = {
           customer_name: string
           customer_phone: string
           delivery_date?: string | null
+          delivery_promised?: string | null
+          engine_no?: string | null
           estimated_labour_cost?: number | null
           estimated_parts_cost?: number | null
           final_bill_amount?: number | null
           final_labour_charge?: number | null
           fuel_level?: number | null
+          fuel_qty?: string | null
           id?: string
           job_date?: string
           job_number?: string
           job_time?: string
+          labour_items?: Json
           mileage_km?: number | null
           parts_used?: string | null
+          primary_jobs?: string | null
+          secondary_jobs?: string | null
+          spares?: Json
           status?: string
+          technical_advice?: string | null
           updated_at?: string
           vehicle_brand?: string | null
           vehicle_model?: string | null
@@ -282,8 +310,14 @@ export type Database = {
           work_done?: string | null
         }
         Update: {
+          actual_cost?: number | null
+          additional_jobs?: string | null
+          advance_amount?: number | null
           assigned_date?: string | null
           assigned_technician_id?: string | null
+          body_damage_notes?: string | null
+          chassis_no?: string | null
+          checklist?: Json
           complaint?: string | null
           created_at?: string
           customer_address?: string | null
@@ -292,18 +326,26 @@ export type Database = {
           customer_name?: string
           customer_phone?: string
           delivery_date?: string | null
+          delivery_promised?: string | null
+          engine_no?: string | null
           estimated_labour_cost?: number | null
           estimated_parts_cost?: number | null
           final_bill_amount?: number | null
           final_labour_charge?: number | null
           fuel_level?: number | null
+          fuel_qty?: string | null
           id?: string
           job_date?: string
           job_number?: string
           job_time?: string
+          labour_items?: Json
           mileage_km?: number | null
           parts_used?: string | null
+          primary_jobs?: string | null
+          secondary_jobs?: string | null
+          spares?: Json
           status?: string
+          technical_advice?: string | null
           updated_at?: string
           vehicle_brand?: string | null
           vehicle_model?: string | null
