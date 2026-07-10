@@ -15,11 +15,13 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ArrowLeft, Save, Printer, Download, Trash2, Upload, ImageOff, Wrench, Fuel, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, Save, Printer, Download, Trash2, Upload, ImageOff, X, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { compressImage } from "@/lib/image-compress";
 import { JOB_STATUSES, STATUS_LABEL, type JobStatus } from "./job-cards.index";
+
+type LineItem = { desc: string; amount: number };
 
 type JobCard = {
   id: string;
@@ -35,11 +37,25 @@ type JobCard = {
   vehicle_model: string | null;
   vehicle_year: number | null;
   vin: string | null;
+  engine_no: string | null;
+  chassis_no: string | null;
   mileage_km: number | null;
   fuel_level: number | null;
+  fuel_qty: string | null;
+  delivery_promised: string | null;
   complaint: string | null;
+  primary_jobs: string | null;
+  secondary_jobs: string | null;
+  additional_jobs: string | null;
+  technical_advice: string | null;
+  body_damage_notes: string | null;
+  checklist: Record<string, "yes" | "no">;
+  spares: LineItem[];
+  labour_items: LineItem[];
   estimated_parts_cost: number | null;
   estimated_labour_cost: number | null;
+  advance_amount: number | null;
+  actual_cost: number | null;
   customer_approval: boolean;
   assigned_technician_id: string | null;
   assigned_date: string | null;
@@ -58,8 +74,13 @@ export const Route = createFileRoute("/_authenticated/job-cards/$jobId")({
   component: JobCardDetailPage,
 });
 
-const NULLABLE_STR = ["customer_email","customer_address","vehicle_brand","vehicle_model","vin","complaint","work_done","parts_used","assigned_date","delivery_date","assigned_technician_id"] as const;
-const NUM_FIELDS = ["vehicle_year","mileage_km","fuel_level","estimated_parts_cost","estimated_labour_cost","final_labour_charge","final_bill_amount"] as const;
+const CHECKLIST_ITEMS = [
+  "Service Pack", "Tool Kit", "Spare Wheel", "Jack & Handle", "Maths",
+  "Mud Flaps", "Stereo", "Wheel Caps", "Cigarette Lighter", "Show Piece",
+  "Perfume", "Speaker F/R", "Side View Mirror", "Side Bedding", "Safety Guard",
+] as const;
+
+const BRAND_LOGOS = ["TOYOTA", "TATA", "Mahindra", "Ford", "NISSAN", "HYUNDAI", "GM", "MARUTI"];
 
 function JobCardDetailPage() {
   const { jobId } = Route.useParams();
@@ -75,7 +96,13 @@ function JobCardDetailPage() {
     queryFn: async () => {
       const { data, error } = await supabase.from("job_cards").select("*").eq("id", jobId).single();
       if (error) throw error;
-      return data as JobCard;
+      const c = data as unknown as JobCard;
+      return {
+        ...c,
+        checklist: (c.checklist ?? {}) as Record<string, "yes" | "no">,
+        spares: Array.isArray(c.spares) ? c.spares : [],
+        labour_items: Array.isArray(c.labour_items) ? c.labour_items : [],
+      } as JobCard;
     },
   });
 
@@ -176,18 +203,24 @@ function JobCardDetailPage() {
   const set = <K extends keyof JobCard>(k: K, v: JobCard[K]) => setForm({ ...form, [k]: v });
   const num = (v: string) => (v === "" ? null : Number(v));
 
-  const totalEstimate = (Number(form.estimated_parts_cost) || 0) + (Number(form.estimated_labour_cost) || 0);
+  const sparesTotal = form.spares.reduce((s, i) => s + (Number(i.amount) || 0), 0);
+  const labourTotal = form.labour_items.reduce((s, i) => s + (Number(i.amount) || 0), 0);
+  const estimatedTotal = sparesTotal + labourTotal;
+
+  const setChecklist = (item: string, v: "yes" | "no") =>
+    set("checklist", { ...form.checklist, [item]: v });
+
+  const updateSpare = (i: number, patch: Partial<LineItem>) => {
+    const next = form.spares.map((row, idx) => idx === i ? { ...row, ...patch } : row);
+    set("spares", next);
+  };
+  const updateLabour = (i: number, patch: Partial<LineItem>) => {
+    const next = form.labour_items.map((row, idx) => idx === i ? { ...row, ...patch } : row);
+    set("labour_items", next);
+  };
 
   const onSave = () => {
     const patch: Partial<JobCard> = { ...form };
-    for (const k of NULLABLE_STR) {
-      const v = patch[k];
-      if (typeof v === "string" && v.trim() === "") (patch as Record<string, unknown>)[k] = null;
-    }
-    for (const k of NUM_FIELDS) {
-      const v = patch[k];
-      if (v === undefined || (v as unknown) === "") (patch as Record<string, unknown>)[k] = null;
-    }
     saveMut.mutate(patch);
   };
 
@@ -230,83 +263,145 @@ function JobCardDetailPage() {
         </div>
 
         <div className="grid gap-6">
-          {/* Visit info */}
           <Card>
-            <CardHeader><CardTitle>Visit</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Repair Order Header</CardTitle></CardHeader>
             <CardContent className="grid gap-4 sm:grid-cols-3">
+              <Field label="Sr. No / Job Card #"><Input value={form.job_number} readOnly className="font-mono" /></Field>
               <Field label="Date"><Input type="date" value={form.job_date} onChange={(e) => set("job_date", e.target.value)} /></Field>
               <Field label="Time"><Input type="time" value={form.job_time?.slice(0,5) ?? ""} onChange={(e) => set("job_time", e.target.value)} /></Field>
-              <Field label="Job Card #"><Input value={form.job_number} readOnly className="font-mono" /></Field>
             </CardContent>
           </Card>
 
-          {/* Customer */}
-          <Card>
-            <CardHeader><CardTitle>Customer</CardTitle></CardHeader>
-            <CardContent className="grid gap-4 sm:grid-cols-2">
-              <Field label="Customer Name"><Input value={form.customer_name} onChange={(e) => set("customer_name", e.target.value)} /></Field>
-              <Field label="Phone Number"><Input value={form.customer_phone} onChange={(e) => set("customer_phone", e.target.value)} /></Field>
-              <Field label="Email"><Input type="email" value={form.customer_email ?? ""} onChange={(e) => set("customer_email", e.target.value)} /></Field>
-              <Field label="Address"><Input value={form.customer_address ?? ""} onChange={(e) => set("customer_address", e.target.value)} /></Field>
-            </CardContent>
-          </Card>
-
-          {/* Vehicle */}
           <Card>
             <CardHeader><CardTitle>Vehicle</CardTitle></CardHeader>
             <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <Field label="Registration #"><Input value={form.vehicle_reg} onChange={(e) => set("vehicle_reg", e.target.value.toUpperCase())} /></Field>
+              <Field label="Registration No."><Input value={form.vehicle_reg} onChange={(e) => set("vehicle_reg", e.target.value.toUpperCase())} /></Field>
+              <Field label="Engine No."><Input value={form.engine_no ?? ""} onChange={(e) => set("engine_no", e.target.value)} /></Field>
+              <Field label="Chassis No."><Input value={form.chassis_no ?? ""} onChange={(e) => set("chassis_no", e.target.value)} /></Field>
+              <Field label="Mileage"><Input type="number" value={form.mileage_km ?? ""} onChange={(e) => set("mileage_km", num(e.target.value) as number | null)} /></Field>
+              <Field label="Delivery Promised"><Input value={form.delivery_promised ?? ""} onChange={(e) => set("delivery_promised", e.target.value)} placeholder="e.g. 5 PM tomorrow" /></Field>
               <Field label="Brand"><Input value={form.vehicle_brand ?? ""} onChange={(e) => set("vehicle_brand", e.target.value)} /></Field>
-              <Field label="Model"><Input value={form.vehicle_model ?? ""} onChange={(e) => set("vehicle_model", e.target.value)} /></Field>
+              <Field label="Model / V. Name"><Input value={form.vehicle_model ?? ""} onChange={(e) => set("vehicle_model", e.target.value)} /></Field>
               <Field label="Year"><Input type="number" value={form.vehicle_year ?? ""} onChange={(e) => set("vehicle_year", num(e.target.value) as number | null)} /></Field>
-              <Field label="VIN / Chassis #"><Input value={form.vin ?? ""} onChange={(e) => set("vin", e.target.value)} /></Field>
-              <Field label="Mileage (km)"><Input type="number" value={form.mileage_km ?? ""} onChange={(e) => set("mileage_km", num(e.target.value) as number | null)} /></Field>
-              <Field label="Fuel Level (1–5)">
-                <div className="flex h-10 items-center gap-2 rounded-md border bg-background px-3">
-                  <Fuel className="h-4 w-4 text-muted-foreground" />
-                  {[1,2,3,4,5].map((n) => (
-                    <button
-                      key={n}
-                      type="button"
-                      onClick={() => set("fuel_level", n)}
-                      className={`h-7 w-7 rounded-md border text-sm font-semibold ${form.fuel_level === n ? "bg-primary text-primary-foreground border-primary" : "hover:bg-accent"}`}
-                    >{n}</button>
-                  ))}
-                </div>
-              </Field>
-            </CardContent>
-          </Card>
-
-          {/* Complaint */}
-          <Card>
-            <CardHeader><CardTitle>Customer Complaint</CardTitle></CardHeader>
-            <CardContent>
-              <Textarea rows={4} value={form.complaint ?? ""} onChange={(e) => set("complaint", e.target.value)} placeholder="Describe the issue reported by the customer..." />
-            </CardContent>
-          </Card>
-
-          {/* Estimate */}
-          <Card>
-            <CardHeader><CardTitle>Estimate</CardTitle></CardHeader>
-            <CardContent className="grid gap-4 sm:grid-cols-3">
-              <Field label="Parts Cost (₹)"><Input type="number" step="0.01" value={form.estimated_parts_cost ?? ""} onChange={(e) => set("estimated_parts_cost", num(e.target.value) as number | null)} /></Field>
-              <Field label="Labour Cost (₹)"><Input type="number" step="0.01" value={form.estimated_labour_cost ?? ""} onChange={(e) => set("estimated_labour_cost", num(e.target.value) as number | null)} /></Field>
-              <Field label="Total Estimate"><Input value={`₹${totalEstimate.toFixed(2)}`} readOnly className="font-semibold" /></Field>
-              <Field label="Customer Approval">
-                <Select value={form.customer_approval ? "yes" : "no"} onValueChange={(v) => set("customer_approval", v === "yes")}>
+              <Field label="Fuel Qty (E / H / F)">
+                <Select value={form.fuel_qty ?? "H"} onValueChange={(v) => set("fuel_qty", v)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="yes">Yes</SelectItem>
-                    <SelectItem value="no">No</SelectItem>
+                    <SelectItem value="E">E (Empty)</SelectItem>
+                    <SelectItem value="H">H (Half)</SelectItem>
+                    <SelectItem value="F">F (Full)</SelectItem>
                   </SelectContent>
                 </Select>
               </Field>
             </CardContent>
           </Card>
 
-          {/* Assignment & work */}
           <Card>
-            <CardHeader><CardTitle>Repair Work</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Owner</CardTitle></CardHeader>
+            <CardContent className="grid gap-4 sm:grid-cols-2">
+              <Field label="Vehicle Owner"><Input value={form.customer_name} onChange={(e) => set("customer_name", e.target.value)} /></Field>
+              <Field label="Mob."><Input value={form.customer_phone} onChange={(e) => set("customer_phone", e.target.value)} /></Field>
+              <Field label="Address"><Input value={form.customer_address ?? ""} onChange={(e) => set("customer_address", e.target.value)} /></Field>
+              <Field label="Email"><Input value={form.customer_email ?? ""} onChange={(e) => set("customer_email", e.target.value)} /></Field>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>Jobs</CardTitle></CardHeader>
+            <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <Field label="Primary Jobs" full><Textarea rows={5} value={form.primary_jobs ?? ""} onChange={(e) => set("primary_jobs", e.target.value)} /></Field>
+              <Field label="Secondary Jobs" full><Textarea rows={5} value={form.secondary_jobs ?? ""} onChange={(e) => set("secondary_jobs", e.target.value)} /></Field>
+              <Field label="Additional Jobs" full><Textarea rows={5} value={form.additional_jobs ?? ""} onChange={(e) => set("additional_jobs", e.target.value)} /></Field>
+              <Field label="Technical Advice" full><Textarea rows={5} value={form.technical_advice ?? ""} onChange={(e) => set("technical_advice", e.target.value)} /></Field>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>Cost</CardTitle></CardHeader>
+            <CardContent className="grid gap-4 sm:grid-cols-3">
+              <Field label="Estimated Cost (₹)"><Input value={estimatedTotal.toFixed(2)} readOnly className="font-semibold" /></Field>
+              <Field label="Advance 80% (₹)"><Input type="number" step="0.01" value={form.advance_amount ?? ""} onChange={(e) => set("advance_amount", num(e.target.value) as number | null)} /></Field>
+              <Field label="Actual Cost (₹)"><Input type="number" step="0.01" value={form.actual_cost ?? ""} onChange={(e) => set("actual_cost", num(e.target.value) as number | null)} /></Field>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Spares</CardTitle>
+              <Button variant="outline" size="sm" onClick={() => set("spares", [...form.spares, { desc: "", amount: 0 }])} className="gap-1"><Plus className="h-4 w-4" /> Add row</Button>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {form.spares.length === 0 && <p className="text-sm text-muted-foreground">No spares yet.</p>}
+                {form.spares.map((r, i) => (
+                  <div key={i} className="grid grid-cols-[1fr_140px_auto] gap-2">
+                    <Input value={r.desc} placeholder="Description" onChange={(e) => updateSpare(i, { desc: e.target.value })} />
+                    <Input type="number" step="0.01" value={r.amount || ""} placeholder="Amount" onChange={(e) => updateSpare(i, { amount: Number(e.target.value) || 0 })} />
+                    <Button variant="ghost" size="icon" onClick={() => set("spares", form.spares.filter((_, idx) => idx !== i))}><Trash2 className="h-4 w-4" /></Button>
+                  </div>
+                ))}
+                <div className="flex justify-end pt-2 text-sm font-semibold">Total: ₹{sparesTotal.toFixed(2)}</div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Labour</CardTitle>
+              <Button variant="outline" size="sm" onClick={() => set("labour_items", [...form.labour_items, { desc: "", amount: 0 }])} className="gap-1"><Plus className="h-4 w-4" /> Add row</Button>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {form.labour_items.length === 0 && <p className="text-sm text-muted-foreground">No labour items yet.</p>}
+                {form.labour_items.map((r, i) => (
+                  <div key={i} className="grid grid-cols-[1fr_140px_auto] gap-2">
+                    <Input value={r.desc} placeholder="Description" onChange={(e) => updateLabour(i, { desc: e.target.value })} />
+                    <Input type="number" step="0.01" value={r.amount || ""} placeholder="Amount" onChange={(e) => updateLabour(i, { amount: Number(e.target.value) || 0 })} />
+                    <Button variant="ghost" size="icon" onClick={() => set("labour_items", form.labour_items.filter((_, idx) => idx !== i))}><Trash2 className="h-4 w-4" /></Button>
+                  </div>
+                ))}
+                <div className="flex justify-end pt-2 text-sm font-semibold">Total: ₹{labourTotal.toFixed(2)}</div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>Body / Paint Damages</CardTitle></CardHeader>
+            <CardContent>
+              <Textarea rows={3} value={form.body_damage_notes ?? ""} onChange={(e) => set("body_damage_notes", e.target.value)} placeholder="C-Crack, D-Dent, S-Scratch — note damages here" />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>Inventory Checklist</CardTitle></CardHeader>
+            <CardContent>
+              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                {CHECKLIST_ITEMS.map((item) => {
+                  const v = form.checklist[item] ?? "no";
+                  return (
+                    <div key={item} className="flex items-center justify-between rounded-md border px-3 py-2">
+                      <span className="text-sm">{item}</span>
+                      <div className="flex gap-1">
+                        <button
+                          type="button"
+                          onClick={() => setChecklist(item, "yes")}
+                          className={`h-8 w-12 rounded border text-xs font-semibold ${v === "yes" ? "bg-primary text-primary-foreground border-primary" : "hover:bg-accent"}`}
+                        >YES</button>
+                        <button
+                          type="button"
+                          onClick={() => setChecklist(item, "no")}
+                          className={`h-8 w-12 rounded border text-xs font-semibold ${v === "no" ? "bg-foreground text-background border-foreground" : "hover:bg-accent"}`}
+                        >NO</button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader><CardTitle>Assignment</CardTitle></CardHeader>
             <CardContent className="grid gap-4 sm:grid-cols-2">
               <Field label="Assigned Technician">
                 <Select value={form.assigned_technician_id ?? "none"} onValueChange={(v) => set("assigned_technician_id", v === "none" ? null : v)}>
@@ -319,27 +414,10 @@ function JobCardDetailPage() {
                   </SelectContent>
                 </Select>
               </Field>
-              <Field label="Assigned Date"><Input type="date" value={form.assigned_date ?? ""} onChange={(e) => set("assigned_date", e.target.value || null)} /></Field>
-              <Field label="Work Done Summary" full>
-                <Textarea rows={3} value={form.work_done ?? ""} onChange={(e) => set("work_done", e.target.value)} />
-              </Field>
-              <Field label="Parts Used" full>
-                <Textarea rows={3} value={form.parts_used ?? ""} onChange={(e) => set("parts_used", e.target.value)} />
-              </Field>
-            </CardContent>
-          </Card>
-
-          {/* Billing */}
-          <Card>
-            <CardHeader><CardTitle>Billing & Delivery</CardTitle></CardHeader>
-            <CardContent className="grid gap-4 sm:grid-cols-3">
-              <Field label="Final Labour Charge (₹)"><Input type="number" step="0.01" value={form.final_labour_charge ?? ""} onChange={(e) => set("final_labour_charge", num(e.target.value) as number | null)} /></Field>
-              <Field label="Final Bill Amount (₹)"><Input type="number" step="0.01" value={form.final_bill_amount ?? ""} onChange={(e) => set("final_bill_amount", num(e.target.value) as number | null)} /></Field>
               <Field label="Delivery Date"><Input type="date" value={form.delivery_date ?? ""} onChange={(e) => set("delivery_date", e.target.value || null)} /></Field>
             </CardContent>
           </Card>
 
-          {/* Photos */}
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Vehicle Photos</CardTitle>
@@ -364,9 +442,6 @@ function JobCardDetailPage() {
                       <button onClick={() => deletePhoto(p)} className="absolute right-1 top-1 rounded-md bg-black/60 p-1 text-white opacity-0 transition group-hover:opacity-100" aria-label="Delete">
                         <Trash2 className="h-4 w-4" />
                       </button>
-                      <div className="absolute inset-x-0 bottom-0 bg-black/60 px-1.5 py-0.5 text-[10px] text-white">
-                        {format(new Date(p.created_at), "d MMM yyyy")}
-                      </div>
                     </div>
                   ))}
                 </div>
@@ -382,8 +457,13 @@ function JobCardDetailPage() {
         </div>
       </div>
 
-      {/* Printable view */}
-      <PrintableJobCard form={form} totalEstimate={totalEstimate} techName={techName} photoUrls={photoUrls.map((p) => p.url)} />
+      <PrintableJobCard
+        form={form}
+        estimatedTotal={estimatedTotal}
+        sparesTotal={sparesTotal}
+        labourTotal={labourTotal}
+        techName={techName}
+      />
 
       <Lightbox
         photos={photoUrls.map((p) => p.url)}
@@ -410,7 +490,7 @@ function JobCardDetailPage() {
 
 function Field({ label, children, full }: { label: string; children: React.ReactNode; full?: boolean }) {
   return (
-    <div className={`space-y-1.5 ${full ? "sm:col-span-2 lg:col-span-3" : ""}`}>
+    <div className={`space-y-1.5 ${full ? "sm:col-span-2 lg:col-span-4" : ""}`}>
       <Label className="text-sm font-medium">{label}</Label>
       {children}
     </div>
@@ -446,28 +526,16 @@ function Lightbox({
       role="dialog"
       aria-modal="true"
     >
-      <button
-        onClick={(e) => { e.stopPropagation(); onClose(); }}
-        className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white hover:bg-white/20"
-        aria-label="Close"
-      >
+      <button onClick={(e) => { e.stopPropagation(); onClose(); }} className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white hover:bg-white/20" aria-label="Close">
         <X className="h-6 w-6" />
       </button>
       {i > 0 && (
-        <button
-          onClick={(e) => { e.stopPropagation(); onChange(i - 1); }}
-          className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-2 text-white hover:bg-white/20"
-          aria-label="Previous"
-        >
+        <button onClick={(e) => { e.stopPropagation(); onChange(i - 1); }} className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-2 text-white hover:bg-white/20" aria-label="Previous">
           <ChevronLeft className="h-7 w-7" />
         </button>
       )}
       {i < photos.length - 1 && (
-        <button
-          onClick={(e) => { e.stopPropagation(); onChange(i + 1); }}
-          className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-2 text-white hover:bg-white/20"
-          aria-label="Next"
-        >
+        <button onClick={(e) => { e.stopPropagation(); onChange(i + 1); }} className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-2 text-white hover:bg-white/20" aria-label="Next">
           <ChevronRight className="h-7 w-7" />
         </button>
       )}
@@ -486,138 +554,287 @@ function LightboxImage({ src }: { src: string }) {
   useEffect(() => { setErrored(false); }, [src]);
   if (!src || errored) {
     return (
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="flex flex-col items-center gap-2 rounded-md bg-white/5 px-8 py-12 text-white"
-      >
+      <div onClick={(e) => e.stopPropagation()} className="flex flex-col items-center gap-2 rounded-md bg-white/5 px-8 py-12 text-white">
         <ImageOff className="h-10 w-10 opacity-70" />
         <p className="text-sm">Image could not be loaded</p>
       </div>
     );
   }
-  return (
-    <img
-      src={src}
-      alt=""
-      onClick={(e) => e.stopPropagation()}
-      onError={() => setErrored(true)}
-      className="max-h-[90vh] max-w-[92vw] object-contain"
-    />
-  );
+  return <img src={src} alt="" onClick={(e) => e.stopPropagation()} onError={() => setErrored(true)} className="max-h-[90vh] max-w-[92vw] object-contain" />;
 }
 
+/* ============================================================
+   PRINTABLE JOB CARD — faithful recreation of the paper form
+   ============================================================ */
+
 function PrintableJobCard({
-  form, totalEstimate, techName, photoUrls,
+  form, estimatedTotal, sparesTotal, labourTotal, techName,
 }: {
   form: JobCard;
-  totalEstimate: number;
+  estimatedTotal: number;
+  sparesTotal: number;
+  labourTotal: number;
   techName: string;
-  photoUrls: string[];
 }) {
-  const Row = ({ label, value }: { label: string; value: React.ReactNode }) => (
-    <div className="flex border-b border-gray-300 py-1 text-sm">
-      <div className="w-44 shrink-0 font-semibold text-gray-700">{label}</div>
-      <div className="flex-1 break-words text-gray-900">{value || <span className="text-gray-400">—</span>}</div>
-    </div>
-  );
+  // pad spares / labour rows to a fixed count so the grid looks like the paper form
+  const SPARES_ROWS = 14;
+  const LABOUR_ROWS = 8;
+  const spares = [...form.spares, ...Array(Math.max(0, SPARES_ROWS - form.spares.length)).fill({ desc: "", amount: 0 })].slice(0, SPARES_ROWS);
+  const labour = [...form.labour_items, ...Array(Math.max(0, LABOUR_ROWS - form.labour_items.length)).fill({ desc: "", amount: 0 })].slice(0, LABOUR_ROWS);
+  const dateStr = form.job_date ? format(new Date(form.job_date), "dd/MM/yy") : "";
+  const timeStr = form.job_time?.slice(0, 5) ?? "";
 
   return (
-    <div className="print-area hidden print:block">
-      <div className="mx-auto max-w-[800px] bg-white p-8 text-black">
-        {/* Header */}
-        <div className="mb-4 flex items-center justify-between border-b-4 border-orange-500 pb-3">
-          <div className="flex items-center gap-3">
-            <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-orange-500 text-white">
-              <Wrench className="h-8 w-8" />
+    <div className="print-jc hidden print:block">
+      <style>{`
+        @page { size: A4 portrait; margin: 8mm; }
+        @media print {
+          html, body { background: white !important; }
+          .print-jc { color: black; font-family: Arial, Helvetica, sans-serif; font-size: 9pt; }
+          .print-jc * { box-sizing: border-box; }
+        }
+        .jc-box { border: 2px solid #000; }
+        .jc-cell { border: 1px solid #000; padding: 2px 4px; }
+        .jc-title { font-weight: 700; text-transform: uppercase; font-size: 8pt; letter-spacing: 0.02em; }
+        .jc-h { font-weight: 700; }
+        .jc-line { min-height: 14px; }
+        .jc-underline { border-bottom: 1px solid #000; min-height: 14px; padding: 0 2px; }
+        .jc-check-yes, .jc-check-no { display: inline-block; width: 18px; text-align: center; font-weight: 700; }
+        .jc-marked { background: #000; color: #fff; }
+      `}</style>
+
+      <div className="jc-box" style={{ width: "194mm" }}>
+        {/* Top strip: REPAIR ORDER / JOB CARD  +  Sr. No */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 40mm", borderBottom: "2px solid #000" }}>
+          <div className="jc-cell" style={{ textAlign: "center", fontWeight: 700, textDecoration: "underline", fontSize: "11pt", padding: "3px" }}>
+            REPAIR ORDER / JOB CARD
+          </div>
+          <div className="jc-cell" style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            <span className="jc-h">Sr. No</span>
+            <span style={{ flex: 1, borderBottom: "1px solid #000", textAlign: "center" }}>{form.job_number.replace(/^JC-0*/, "")}</span>
+          </div>
+        </div>
+
+        {/* Brand strip */}
+        <div className="jc-cell" style={{ display: "flex", justifyContent: "space-around", alignItems: "center", padding: "3px 4px", fontSize: "8pt", fontWeight: 700 }}>
+          {BRAND_LOGOS.map((b) => <span key={b}>{b}</span>)}
+        </div>
+
+        {/* Workshop banner + Time/Date */}
+        <div style={{ display: "grid", gridTemplateColumns: "60mm 1fr 40mm", borderTop: "2px solid #000" }}>
+          <div className="jc-cell" style={{ padding: "4px 6px" }}>
+            <div style={{ fontSize: "18pt", fontWeight: 800, fontStyle: "italic", lineHeight: 1 }}>Auto Scanners</div>
+            <div style={{ fontSize: "7.5pt", marginTop: 3, fontWeight: 600 }}>ISO : 9001 Paint Booth &amp;</div>
+            <div style={{ fontSize: "7.5pt", fontWeight: 600 }}>Computerized Auto Workshop</div>
+          </div>
+          <div className="jc-cell" style={{ textAlign: "center", padding: "6px 4px", fontWeight: 700, fontSize: "10pt", lineHeight: 1.3 }}>
+            NEAR BENIGANJ RAILWAY CROSSING,<br />
+            DEOKALI MANDIR ROAD<br />
+            FAIZABAD (U.P.) MOB. : 9795225926
+          </div>
+          <div style={{ display: "grid", gridTemplateRows: "1fr 1fr" }}>
+            <div className="jc-cell" style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <span className="jc-h">TIME :</span>
+              <span style={{ flex: 1, textAlign: "center" }}>{timeStr}</span>
             </div>
-            <div>
-              <div className="text-2xl font-extrabold tracking-tight">Autoscanners</div>
-              <div className="text-xs uppercase tracking-widest text-gray-500">Vehicle Repair Workshop</div>
+            <div className="jc-cell" style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <span className="jc-h">DATE</span>
+              <span style={{ flex: 1, textAlign: "center" }}>{dateStr}</span>
             </div>
           </div>
-          <div className="text-right">
-            <div className="text-lg font-bold">JOB CARD</div>
-            <div className="font-mono text-sm">{form.job_number}</div>
-            <div className="text-xs text-gray-600">
-              {form.job_date} · {form.job_time?.slice(0,5)}
+        </div>
+
+        {/* Registration / Engine / Chassis / Mileage / Delivery Promised */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", borderTop: "1px solid #000" }}>
+          {[
+            { l: "Registration No.", v: form.vehicle_reg },
+            { l: "Engine No.", v: form.engine_no },
+            { l: "Chassis No.", v: form.chassis_no },
+            { l: "Mileage", v: form.mileage_km ? String(form.mileage_km) : "" },
+            { l: "Delivery Promised", v: form.delivery_promised },
+          ].map((c) => (
+            <div key={c.l} className="jc-cell">
+              <div className="jc-h" style={{ fontSize: "8pt" }}>{c.l}</div>
+              <div className="jc-line">{c.v || ""}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Owner / Address / V. Name / Mob */}
+        <div style={{ display: "grid", gridTemplateColumns: "60mm 1fr 40mm" }}>
+          <div className="jc-cell">
+            <div className="jc-h">Vehicle Owner</div>
+            <div className="jc-line">{form.customer_name}</div>
+          </div>
+          <div className="jc-cell">
+            <div className="jc-h">Address :</div>
+            <div className="jc-line">{form.customer_address ?? ""}</div>
+          </div>
+          <div style={{ display: "grid", gridTemplateRows: "1fr 1fr" }}>
+            <div className="jc-cell">
+              <div className="jc-h">V. Name</div>
+              <div className="jc-line">{[form.vehicle_brand, form.vehicle_model].filter(Boolean).join(" ")}</div>
+            </div>
+            <div className="jc-cell">
+              <div className="jc-h">Mob.</div>
+              <div className="jc-line">{form.customer_phone}</div>
             </div>
           </div>
         </div>
 
-        {/* Customer / Vehicle */}
-        <div className="grid grid-cols-2 gap-6">
-          <section>
-            <h3 className="mb-1 border-b border-orange-300 pb-1 text-sm font-bold uppercase text-orange-700">Customer</h3>
-            <Row label="Name" value={form.customer_name} />
-            <Row label="Phone" value={form.customer_phone} />
-            <Row label="Email" value={form.customer_email} />
-            <Row label="Address" value={form.customer_address} />
-          </section>
-          <section>
-            <h3 className="mb-1 border-b border-orange-300 pb-1 text-sm font-bold uppercase text-orange-700">Vehicle</h3>
-            <Row label="Registration" value={form.vehicle_reg} />
-            <Row label="Brand / Model" value={`${form.vehicle_brand ?? ""} ${form.vehicle_model ?? ""}`.trim()} />
-            <Row label="Year" value={form.vehicle_year} />
-            <Row label="VIN / Chassis" value={form.vin} />
-            <Row label="Mileage" value={form.mileage_km ? `${form.mileage_km} km` : ""} />
-            <Row label="Fuel Level" value={form.fuel_level ? `${form.fuel_level} / 5` : ""} />
-          </section>
-        </div>
-
-        {/* Complaint */}
-        <section className="mt-4">
-          <h3 className="mb-1 border-b border-orange-300 pb-1 text-sm font-bold uppercase text-orange-700">Customer Complaint</h3>
-          <p className="min-h-[40px] whitespace-pre-wrap py-1 text-sm">{form.complaint || "—"}</p>
-        </section>
-
-        {/* Estimate */}
-        <section className="mt-4">
-          <h3 className="mb-1 border-b border-orange-300 pb-1 text-sm font-bold uppercase text-orange-700">Estimate</h3>
-          <Row label="Parts Cost" value={`₹${Number(form.estimated_parts_cost ?? 0).toFixed(2)}`} />
-          <Row label="Labour Cost" value={`₹${Number(form.estimated_labour_cost ?? 0).toFixed(2)}`} />
-          <Row label="Total Estimate" value={<span className="font-bold">₹{totalEstimate.toFixed(2)}</span>} />
-          <Row label="Customer Approval" value={form.customer_approval ? "YES" : "NO"} />
-        </section>
-
-        {/* Repair */}
-        <section className="mt-4">
-          <h3 className="mb-1 border-b border-orange-300 pb-1 text-sm font-bold uppercase text-orange-700">Repair Details</h3>
-          <Row label="Technician" value={techName} />
-          <Row label="Assigned Date" value={form.assigned_date} />
-          <Row label="Work Done" value={<span className="whitespace-pre-wrap">{form.work_done}</span>} />
-          <Row label="Parts Used" value={<span className="whitespace-pre-wrap">{form.parts_used}</span>} />
-        </section>
-
-        {/* Billing */}
-        <section className="mt-4">
-          <h3 className="mb-1 border-b border-orange-300 pb-1 text-sm font-bold uppercase text-orange-700">Billing</h3>
-          <Row label="Final Labour Charge" value={`₹${Number(form.final_labour_charge ?? 0).toFixed(2)}`} />
-          <Row label="Final Bill Amount" value={<span className="font-bold">₹{Number(form.final_bill_amount ?? 0).toFixed(2)}</span>} />
-          <Row label="Delivery Date" value={form.delivery_date} />
-          <Row label="Status" value={STATUS_LABEL[form.status]} />
-        </section>
-
-        {photoUrls.length > 0 && (
-          <section className="mt-4">
-            <h3 className="mb-1 border-b border-orange-300 pb-1 text-sm font-bold uppercase text-orange-700">Vehicle Photos</h3>
-            <div className="grid grid-cols-3 gap-2 pt-2">
-              {photoUrls.slice(0, 6).map((u) => (
-                <img key={u} src={u} alt="" className="h-28 w-full rounded border object-cover" />
-              ))}
+        {/* Jobs 4-column table */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", borderTop: "1px solid #000" }}>
+          {[
+            { l: "PRIMARY JOBS", v: form.primary_jobs },
+            { l: "SECONDARY JOBS", v: form.secondary_jobs },
+            { l: "ADDITIONAL JOBS", v: form.additional_jobs },
+            { l: "TECHNICAL ADVICE", v: form.technical_advice },
+          ].map((c) => (
+            <div key={c.l} className="jc-cell" style={{ minHeight: "48mm", padding: 0 }}>
+              <div className="jc-title" style={{ textAlign: "center", borderBottom: "1px solid #000", padding: "3px 2px" }}>{c.l}</div>
+              <div style={{ padding: "3px 4px", whiteSpace: "pre-wrap", fontSize: "9pt", lineHeight: "18px", backgroundImage: "repeating-linear-gradient(transparent, transparent 17px, #000 17px, #000 18px)", minHeight: "44mm" }}>
+                {c.v || ""}
+              </div>
             </div>
-          </section>
-        )}
-
-        {/* Signatures */}
-        <div className="mt-10 grid grid-cols-2 gap-12">
-          <div className="border-t border-gray-500 pt-1 text-center text-xs">Customer Signature</div>
-          <div className="border-t border-gray-500 pt-1 text-center text-xs">Workshop Signature</div>
+          ))}
         </div>
 
-        <div className="mt-6 text-center text-[10px] text-gray-500">
-          Generated by Autoscanners Workshop Manager · {format(new Date(), "d MMM yyyy, HH:mm")}
+        {/* Estimated / Advance / Actual */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", borderTop: "1px solid #000" }}>
+          <div className="jc-cell">
+            <div className="jc-h">ESTIMATED COST</div>
+            <div className="jc-line">₹{estimatedTotal.toFixed(2)}</div>
+          </div>
+          <div className="jc-cell">
+            <div className="jc-h">ADVANCE 80%</div>
+            <div className="jc-line">₹{Number(form.advance_amount ?? 0).toFixed(2)}</div>
+          </div>
+          <div className="jc-cell">
+            <div className="jc-h">ACTUAL COST</div>
+            <div className="jc-line">₹{Number(form.actual_cost ?? 0).toFixed(2)}</div>
+          </div>
+        </div>
+
+        {/* Payment terms banner */}
+        <div className="jc-cell" style={{ textAlign: "center", fontWeight: 700, padding: "3px", borderTop: "1px solid #000" }}>
+          <span style={{ textDecoration: "underline", marginRight: 6 }}>PAYMENT TERMS</span>
+          ONLY CASH / DEMAND DRAFT / PAY ORDER
+        </div>
+
+        {/* Middle grid: Spares/Labour  |  Body diagram  |  Checklist */}
+        <div style={{ display: "grid", gridTemplateColumns: "70mm 55mm 1fr", borderTop: "1px solid #000" }}>
+          {/* LEFT: Spares + Labour */}
+          <div style={{ borderRight: "1px solid #000" }}>
+            <div className="jc-title" style={{ textAlign: "center", padding: "3px", borderBottom: "1px solid #000" }}>SPARES</div>
+            {spares.map((r, i) => (
+              <div key={`s${i}`} style={{ display: "grid", gridTemplateColumns: "1fr 20mm", borderBottom: "1px solid #000", minHeight: "16px" }}>
+                <div className="jc-cell" style={{ borderLeft: "none", borderRight: "1px solid #000", borderTop: "none", borderBottom: "none", padding: "1px 3px" }}>{r.desc}</div>
+                <div className="jc-cell" style={{ border: "none", padding: "1px 3px", textAlign: "right" }}>{r.amount ? Number(r.amount).toFixed(0) : ""}</div>
+              </div>
+            ))}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 20mm", borderBottom: "1px solid #000", background: "#eee" }}>
+              <div className="jc-cell" style={{ border: "none", borderRight: "1px solid #000", fontWeight: 700 }}>TOTAL</div>
+              <div className="jc-cell" style={{ border: "none", textAlign: "right", fontWeight: 700 }}>{sparesTotal.toFixed(0)}</div>
+            </div>
+
+            <div className="jc-title" style={{ textAlign: "center", padding: "3px", borderBottom: "1px solid #000", borderTop: "1px solid #000" }}>LABOUR</div>
+            {labour.map((r, i) => (
+              <div key={`l${i}`} style={{ display: "grid", gridTemplateColumns: "1fr 20mm", borderBottom: "1px solid #000", minHeight: "16px" }}>
+                <div className="jc-cell" style={{ border: "none", borderRight: "1px solid #000", padding: "1px 3px" }}>{r.desc}</div>
+                <div className="jc-cell" style={{ border: "none", padding: "1px 3px", textAlign: "right" }}>{r.amount ? Number(r.amount).toFixed(0) : ""}</div>
+              </div>
+            ))}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 20mm", background: "#eee" }}>
+              <div className="jc-cell" style={{ border: "none", borderRight: "1px solid #000", fontWeight: 700 }}>TOTAL</div>
+              <div className="jc-cell" style={{ border: "none", textAlign: "right", fontWeight: 700 }}>{labourTotal.toFixed(0)}</div>
+            </div>
+          </div>
+
+          {/* CENTER: Fuel + Body diagram */}
+          <div style={{ borderRight: "1px solid #000", display: "flex", flexDirection: "column" }}>
+            {/* Fuel gauge */}
+            <div className="jc-cell" style={{ border: "none", borderBottom: "1px solid #000", textAlign: "center" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                <span className={form.fuel_qty === "E" ? "jc-marked" : ""} style={{ padding: "0 4px" }}>E</span>
+                <span style={{ borderTop: "2px solid #000", flex: 1, minWidth: 30 }} />
+                <span className={form.fuel_qty === "H" ? "jc-marked" : ""} style={{ padding: "0 4px", fontWeight: 700 }}>H</span>
+                <span style={{ borderTop: "2px solid #000", flex: 1, minWidth: 30 }} />
+                <span className={form.fuel_qty === "F" ? "jc-marked" : ""} style={{ padding: "0 4px" }}>F</span>
+              </div>
+              <div className="jc-h" style={{ fontSize: "8pt", marginTop: 2 }}>Fuel Qty.</div>
+            </div>
+            <div style={{ padding: "4px", flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "space-between" }}>
+              <div className="jc-h" style={{ alignSelf: "flex-start", fontSize: "9pt" }}>Body / Paint damages</div>
+              <CarDiagram />
+              <div style={{ textAlign: "center", fontSize: "8pt", fontWeight: 700, lineHeight: 1.3 }}>
+                C-CRACK, D-DENT<br />S-SCRATION
+              </div>
+              {form.body_damage_notes && (
+                <div style={{ fontSize: "8pt", padding: "2px 4px", width: "100%", borderTop: "1px dashed #000", whiteSpace: "pre-wrap" }}>
+                  {form.body_damage_notes}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* RIGHT: YES/NO checklist */}
+          <div>
+            {CHECKLIST_ITEMS.map((item) => {
+              const v = form.checklist[item] ?? "no";
+              return (
+                <div key={item} style={{ display: "grid", gridTemplateColumns: "1fr 12mm 12mm", borderBottom: "1px solid #000", minHeight: "17px" }}>
+                  <div className="jc-cell" style={{ border: "none", borderRight: "1px solid #000", fontWeight: 700, fontSize: "8.5pt", padding: "1px 4px", textTransform: "uppercase" }}>{item}</div>
+                  <div className={`jc-cell ${v === "yes" ? "jc-marked" : ""}`} style={{ border: "none", borderRight: "1px solid #000", textAlign: "center", fontWeight: 700, padding: "1px" }}>YES</div>
+                  <div className={`jc-cell ${v === "no" ? "jc-marked" : ""}`} style={{ border: "none", textAlign: "center", fontWeight: 700, padding: "1px" }}>NO</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Authorisation */}
+        <div className="jc-cell" style={{ borderTop: "2px solid #000", padding: "4px 6px" }}>
+          <div style={{ textAlign: "center", fontWeight: 700, textDecoration: "underline", marginBottom: 3 }}>AUTHORISATION</div>
+          <p style={{ margin: 0, fontSize: "8.5pt", textAlign: "center" }}>
+            I, thereby, authorize for the above repairs and jobs to be carried out using necessary spares and accessories.
+            I, further hereby, agree to abide by the terms and conditions as explained to me by the in-charge workshop.
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", marginTop: 6 }}>
+            <div>Date : {dateStr}</div>
+            <div style={{ textAlign: "right", fontStyle: "italic" }}>Customer's Signature</div>
+          </div>
+          <p style={{ margin: "6px 0 0", fontSize: "8.5pt", textAlign: "center" }}>
+            I, hereby, certify that the repairs oprdered by me, have been carried out to my entire satisfaction,
+            My vehicle is now running to the best of my satisfaction
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", marginTop: 6 }}>
+            <div>Date :</div>
+            <div style={{ textAlign: "right", fontStyle: "italic" }}>Customer's Signature</div>
+          </div>
+          {techName && <div style={{ marginTop: 4, fontSize: "8pt" }}>Technician: {techName}</div>}
         </div>
       </div>
     </div>
+  );
+}
+
+function CarDiagram() {
+  return (
+    <svg viewBox="0 0 120 160" width="90" height="120" style={{ display: "block" }}>
+      {/* Top view - front */}
+      <g fill="none" stroke="#000" strokeWidth="1.5">
+        <rect x="30" y="8" width="60" height="65" rx="10" />
+        <rect x="40" y="18" width="40" height="20" rx="3" />
+        <rect x="40" y="45" width="40" height="22" rx="3" />
+        <circle cx="34" cy="22" r="2" />
+        <circle cx="86" cy="22" r="2" />
+        {/* Top view - rear */}
+        <rect x="30" y="87" width="60" height="65" rx="10" />
+        <rect x="40" y="97" width="40" height="20" rx="3" />
+        <rect x="40" y="124" width="40" height="22" rx="3" />
+        <circle cx="34" cy="146" r="2" />
+        <circle cx="86" cy="146" r="2" />
+      </g>
+    </svg>
   );
 }
