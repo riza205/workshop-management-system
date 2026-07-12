@@ -577,8 +577,8 @@ function PrintableJobCard({
   techName: string;
 }) {
   // pad spares / labour rows to a fixed count so the grid looks like the paper form
-  const SPARES_ROWS = 14;
-  const LABOUR_ROWS = 8;
+  const SPARES_ROWS = 10;
+  const LABOUR_ROWS = 5;
   const spares = [...form.spares, ...Array(Math.max(0, SPARES_ROWS - form.spares.length)).fill({ desc: "", amount: 0 })].slice(0, SPARES_ROWS);
   const labour = [...form.labour_items, ...Array(Math.max(0, LABOUR_ROWS - form.labour_items.length)).fill({ desc: "", amount: 0 })].slice(0, LABOUR_ROWS);
   const dateStr = form.job_date ? format(new Date(form.job_date), "dd/MM/yy") : "";
@@ -587,19 +587,19 @@ function PrintableJobCard({
   return (
     <div className="print-jc hidden print:block">
       <style>{`
-        @page { size: A4 portrait; margin: 8mm; }
+        @page { size: A4 portrait; margin: 6mm; }
         @media print {
           html, body { background: white !important; }
-          .print-jc { color: black; font-family: Arial, Helvetica, sans-serif; font-size: 9pt; }
+          .print-jc { color: black; font-family: Arial, Helvetica, sans-serif; font-size: 8pt; }
           .print-jc * { box-sizing: border-box; }
         }
         .jc-box { border: 2px solid #000; }
-        .jc-cell { border: 1px solid #000; padding: 2px 4px; }
-        .jc-title { font-weight: 700; text-transform: uppercase; font-size: 8pt; letter-spacing: 0.02em; }
+        .jc-cell { border: 1px solid #000; padding: 1px 3px; }
+        .jc-title { font-weight: 700; text-transform: uppercase; font-size: 7.5pt; letter-spacing: 0.02em; }
         .jc-h { font-weight: 700; }
-        .jc-line { min-height: 14px; }
-        .jc-underline { border-bottom: 1px solid #000; min-height: 14px; padding: 0 2px; }
-        .jc-check-yes, .jc-check-no { display: inline-block; width: 18px; text-align: center; font-weight: 700; }
+        .jc-line { min-height: 12px; }
+        .jc-underline { border-bottom: 1px solid #000; min-height: 12px; padding: 0 2px; }
+        .jc-check-yes, .jc-check-no { display: inline-block; width: 16px; text-align: center; font-weight: 700; }
         .jc-marked { background: #000; color: #fff; }
       `}</style>
 
@@ -622,12 +622,12 @@ function PrintableJobCard({
 
         {/* Workshop banner + Time/Date */}
         <div style={{ display: "grid", gridTemplateColumns: "60mm 1fr 40mm", borderTop: "2px solid #000" }}>
-          <div className="jc-cell" style={{ padding: "4px 6px" }}>
-            <div style={{ fontSize: "18pt", fontWeight: 800, fontStyle: "italic", lineHeight: 1 }}>Auto Scanners</div>
-            <div style={{ fontSize: "7.5pt", marginTop: 3, fontWeight: 600 }}>ISO : 9001 Paint Booth &amp;</div>
-            <div style={{ fontSize: "7.5pt", fontWeight: 600 }}>Computerized Auto Workshop</div>
+          <div className="jc-cell" style={{ padding: "3px 6px" }}>
+            <div style={{ fontSize: "15pt", fontWeight: 800, fontStyle: "italic", lineHeight: 1 }}>Auto Scanners</div>
+            <div style={{ fontSize: "7pt", marginTop: 2, fontWeight: 600 }}>ISO : 9001 Paint Booth &amp;</div>
+            <div style={{ fontSize: "7pt", fontWeight: 600 }}>Computerized Auto Workshop</div>
           </div>
-          <div className="jc-cell" style={{ textAlign: "center", padding: "6px 4px", fontWeight: 700, fontSize: "10pt", lineHeight: 1.3 }}>
+          <div className="jc-cell" style={{ textAlign: "center", padding: "4px 4px", fontWeight: 700, fontSize: "9pt", lineHeight: 1.25 }}>
             NEAR BENIGANJ RAILWAY CROSSING,<br />
             DEOKALI MANDIR ROAD<br />
             FAIZABAD (U.P.) MOB. : 9795225926
@@ -690,9 +690,9 @@ function PrintableJobCard({
             { l: "ADDITIONAL JOBS", v: form.additional_jobs },
             { l: "TECHNICAL ADVICE", v: form.technical_advice },
           ].map((c) => (
-            <div key={c.l} className="jc-cell" style={{ minHeight: "48mm", padding: 0 }}>
-              <div className="jc-title" style={{ textAlign: "center", borderBottom: "1px solid #000", padding: "3px 2px" }}>{c.l}</div>
-              <div style={{ padding: "3px 4px", whiteSpace: "pre-wrap", fontSize: "9pt", lineHeight: "18px", backgroundImage: "repeating-linear-gradient(transparent, transparent 17px, #000 17px, #000 18px)", minHeight: "44mm" }}>
+            <div key={c.l} className="jc-cell" style={{ minHeight: "28mm", padding: 0 }}>
+              <div className="jc-title" style={{ textAlign: "center", borderBottom: "1px solid #000", padding: "2px" }}>{c.l}</div>
+              <div style={{ padding: "2px 3px", whiteSpace: "pre-wrap", fontSize: "8pt", lineHeight: "14px", backgroundImage: "repeating-linear-gradient(transparent, transparent 13px, #000 13px, #000 14px)", minHeight: "25mm" }}>
                 {c.v || ""}
               </div>
             </div>
@@ -793,25 +793,25 @@ function PrintableJobCard({
         </div>
 
         {/* Authorisation */}
-        <div className="jc-cell" style={{ borderTop: "2px solid #000", padding: "4px 6px" }}>
-          <div style={{ textAlign: "center", fontWeight: 700, textDecoration: "underline", marginBottom: 3 }}>AUTHORISATION</div>
-          <p style={{ margin: 0, fontSize: "8.5pt", textAlign: "center" }}>
+        <div className="jc-cell" style={{ borderTop: "2px solid #000", padding: "3px 6px" }}>
+          <div style={{ textAlign: "center", fontWeight: 700, textDecoration: "underline", marginBottom: 2, fontSize: "8pt" }}>AUTHORISATION</div>
+          <p style={{ margin: 0, fontSize: "7.5pt", textAlign: "center", lineHeight: 1.25 }}>
             I, thereby, authorize for the above repairs and jobs to be carried out using necessary spares and accessories.
             I, further hereby, agree to abide by the terms and conditions as explained to me by the in-charge workshop.
           </p>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", marginTop: 6 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", marginTop: 3, fontSize: "7.5pt" }}>
             <div>Date : {dateStr}</div>
             <div style={{ textAlign: "right", fontStyle: "italic" }}>Customer's Signature</div>
           </div>
-          <p style={{ margin: "6px 0 0", fontSize: "8.5pt", textAlign: "center" }}>
-            I, hereby, certify that the repairs oprdered by me, have been carried out to my entire satisfaction,
-            My vehicle is now running to the best of my satisfaction
+          <p style={{ margin: "3px 0 0", fontSize: "7.5pt", textAlign: "center", lineHeight: 1.25 }}>
+            I, hereby, certify that the repairs ordered by me have been carried out to my entire satisfaction.
+            My vehicle is now running to the best of my satisfaction.
           </p>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", marginTop: 6 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", marginTop: 3, fontSize: "7.5pt" }}>
             <div>Date :</div>
             <div style={{ textAlign: "right", fontStyle: "italic" }}>Customer's Signature</div>
           </div>
-          {techName && <div style={{ marginTop: 4, fontSize: "8pt" }}>Technician: {techName}</div>}
+          {techName && <div style={{ marginTop: 2, fontSize: "7.5pt" }}>Technician: {techName}</div>}
         </div>
       </div>
     </div>
@@ -820,20 +820,50 @@ function PrintableJobCard({
 
 function CarDiagram() {
   return (
-    <svg viewBox="0 0 120 160" width="90" height="120" style={{ display: "block" }}>
-      {/* Top view - front */}
-      <g fill="none" stroke="#000" strokeWidth="1.5">
-        <rect x="30" y="8" width="60" height="65" rx="10" />
-        <rect x="40" y="18" width="40" height="20" rx="3" />
-        <rect x="40" y="45" width="40" height="22" rx="3" />
-        <circle cx="34" cy="22" r="2" />
-        <circle cx="86" cy="22" r="2" />
-        {/* Top view - rear */}
-        <rect x="30" y="87" width="60" height="65" rx="10" />
-        <rect x="40" y="97" width="40" height="20" rx="3" />
-        <rect x="40" y="124" width="40" height="22" rx="3" />
-        <circle cx="34" cy="146" r="2" />
-        <circle cx="86" cy="146" r="2" />
+    <svg viewBox="0 0 140 170" width="105" height="128" style={{ display: "block" }} xmlns="http://www.w3.org/2000/svg">
+      <g fill="none" stroke="#000" strokeWidth="1.3" strokeLinejoin="round" strokeLinecap="round">
+        {/* ===== TOP VIEW ===== */}
+        {/* Body outline */}
+        <path d="M40 6 Q70 2 100 6 L108 30 Q110 55 108 80 L100 88 Q70 92 40 88 L32 80 Q30 55 32 30 Z" />
+        {/* Hood line */}
+        <path d="M40 22 Q70 20 100 22" />
+        {/* Windshield */}
+        <path d="M43 24 L46 40 L94 40 L97 24" />
+        {/* Roof */}
+        <rect x="46" y="40" width="48" height="22" />
+        {/* Rear windshield */}
+        <path d="M46 62 L43 74 L97 74 L94 62" />
+        {/* Trunk line */}
+        <path d="M40 74 Q70 76 100 74" />
+        {/* Side mirrors */}
+        <rect x="28" y="30" width="4" height="5" />
+        <rect x="108" y="30" width="4" height="5" />
+        {/* Wheels (top) */}
+        <rect x="30" y="18" width="4" height="8" />
+        <rect x="106" y="18" width="4" height="8" />
+        <rect x="30" y="66" width="4" height="8" />
+        <rect x="106" y="66" width="4" height="8" />
+
+        {/* Divider */}
+        <line x1="10" y1="98" x2="130" y2="98" strokeDasharray="2 2" />
+
+        {/* ===== SIDE VIEW ===== */}
+        {/* Lower body */}
+        <path d="M12 150 L20 138 L36 132 L58 128 L92 128 L112 132 L126 138 L130 150 Z" />
+        {/* Cabin/roof */}
+        <path d="M42 128 L54 112 L96 112 L108 128" />
+        {/* Windows */}
+        <line x1="70" y1="112" x2="70" y2="128" />
+        {/* Doors */}
+        <line x1="70" y1="128" x2="70" y2="150" />
+        {/* Wheels (side) */}
+        <circle cx="34" cy="150" r="7" />
+        <circle cx="34" cy="150" r="2.5" />
+        <circle cx="108" cy="150" r="7" />
+        <circle cx="108" cy="150" r="2.5" />
+        {/* Handles */}
+        <line x1="50" y1="134" x2="60" y2="134" />
+        <line x1="80" y1="134" x2="90" y2="134" />
       </g>
     </svg>
   );
