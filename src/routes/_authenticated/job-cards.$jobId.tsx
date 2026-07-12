@@ -577,8 +577,8 @@ function PrintableJobCard({
   techName: string;
 }) {
   // pad spares / labour rows to a fixed count so the grid looks like the paper form
-  const SPARES_ROWS = 14;
-  const LABOUR_ROWS = 8;
+  const SPARES_ROWS = 10;
+  const LABOUR_ROWS = 5;
   const spares = [...form.spares, ...Array(Math.max(0, SPARES_ROWS - form.spares.length)).fill({ desc: "", amount: 0 })].slice(0, SPARES_ROWS);
   const labour = [...form.labour_items, ...Array(Math.max(0, LABOUR_ROWS - form.labour_items.length)).fill({ desc: "", amount: 0 })].slice(0, LABOUR_ROWS);
   const dateStr = form.job_date ? format(new Date(form.job_date), "dd/MM/yy") : "";
@@ -587,19 +587,19 @@ function PrintableJobCard({
   return (
     <div className="print-jc hidden print:block">
       <style>{`
-        @page { size: A4 portrait; margin: 8mm; }
+        @page { size: A4 portrait; margin: 6mm; }
         @media print {
           html, body { background: white !important; }
-          .print-jc { color: black; font-family: Arial, Helvetica, sans-serif; font-size: 9pt; }
+          .print-jc { color: black; font-family: Arial, Helvetica, sans-serif; font-size: 8pt; }
           .print-jc * { box-sizing: border-box; }
         }
         .jc-box { border: 2px solid #000; }
-        .jc-cell { border: 1px solid #000; padding: 2px 4px; }
-        .jc-title { font-weight: 700; text-transform: uppercase; font-size: 8pt; letter-spacing: 0.02em; }
+        .jc-cell { border: 1px solid #000; padding: 1px 3px; }
+        .jc-title { font-weight: 700; text-transform: uppercase; font-size: 7.5pt; letter-spacing: 0.02em; }
         .jc-h { font-weight: 700; }
-        .jc-line { min-height: 14px; }
-        .jc-underline { border-bottom: 1px solid #000; min-height: 14px; padding: 0 2px; }
-        .jc-check-yes, .jc-check-no { display: inline-block; width: 18px; text-align: center; font-weight: 700; }
+        .jc-line { min-height: 12px; }
+        .jc-underline { border-bottom: 1px solid #000; min-height: 12px; padding: 0 2px; }
+        .jc-check-yes, .jc-check-no { display: inline-block; width: 16px; text-align: center; font-weight: 700; }
         .jc-marked { background: #000; color: #fff; }
       `}</style>
 
