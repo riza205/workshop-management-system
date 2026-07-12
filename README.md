@@ -1,6 +1,6 @@
 # Workshop Management System
 
-A full-stack workshop management system built for a real automobile garage to digitize customer records, repair job cards, employee management, and daily workshop operations.
+A full-stack workshop management system built for a real family-owned automobile garage to replace paper-based tracking with a digital system for job cards, employee management, and daily workshop operations.
 
 ## Features
 
@@ -18,8 +18,7 @@ A full-stack workshop management system built for a real automobile garage to di
 - TypeScript
 - Tailwind CSS
 - Supabase (PostgreSQL)
-- GitHub
-- Vercel
+- Vite
 
 ## Getting Started
 
