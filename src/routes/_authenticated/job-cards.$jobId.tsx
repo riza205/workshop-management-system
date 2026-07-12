@@ -793,25 +793,25 @@ function PrintableJobCard({
         </div>
 
         {/* Authorisation */}
-        <div className="jc-cell" style={{ borderTop: "2px solid #000", padding: "4px 6px" }}>
-          <div style={{ textAlign: "center", fontWeight: 700, textDecoration: "underline", marginBottom: 3 }}>AUTHORISATION</div>
-          <p style={{ margin: 0, fontSize: "8.5pt", textAlign: "center" }}>
+        <div className="jc-cell" style={{ borderTop: "2px solid #000", padding: "3px 6px" }}>
+          <div style={{ textAlign: "center", fontWeight: 700, textDecoration: "underline", marginBottom: 2, fontSize: "8pt" }}>AUTHORISATION</div>
+          <p style={{ margin: 0, fontSize: "7.5pt", textAlign: "center", lineHeight: 1.25 }}>
             I, thereby, authorize for the above repairs and jobs to be carried out using necessary spares and accessories.
             I, further hereby, agree to abide by the terms and conditions as explained to me by the in-charge workshop.
           </p>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", marginTop: 6 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", marginTop: 3, fontSize: "7.5pt" }}>
             <div>Date : {dateStr}</div>
             <div style={{ textAlign: "right", fontStyle: "italic" }}>Customer's Signature</div>
           </div>
-          <p style={{ margin: "6px 0 0", fontSize: "8.5pt", textAlign: "center" }}>
-            I, hereby, certify that the repairs oprdered by me, have been carried out to my entire satisfaction,
-            My vehicle is now running to the best of my satisfaction
+          <p style={{ margin: "3px 0 0", fontSize: "7.5pt", textAlign: "center", lineHeight: 1.25 }}>
+            I, hereby, certify that the repairs ordered by me have been carried out to my entire satisfaction.
+            My vehicle is now running to the best of my satisfaction.
           </p>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", marginTop: 6 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", marginTop: 3, fontSize: "7.5pt" }}>
             <div>Date :</div>
             <div style={{ textAlign: "right", fontStyle: "italic" }}>Customer's Signature</div>
           </div>
-          {techName && <div style={{ marginTop: 4, fontSize: "8pt" }}>Technician: {techName}</div>}
+          {techName && <div style={{ marginTop: 2, fontSize: "7.5pt" }}>Technician: {techName}</div>}
         </div>
       </div>
     </div>
@@ -820,20 +820,50 @@ function PrintableJobCard({
 
 function CarDiagram() {
   return (
-    <svg viewBox="0 0 120 160" width="90" height="120" style={{ display: "block" }}>
-      {/* Top view - front */}
-      <g fill="none" stroke="#000" strokeWidth="1.5">
-        <rect x="30" y="8" width="60" height="65" rx="10" />
-        <rect x="40" y="18" width="40" height="20" rx="3" />
-        <rect x="40" y="45" width="40" height="22" rx="3" />
-        <circle cx="34" cy="22" r="2" />
-        <circle cx="86" cy="22" r="2" />
-        {/* Top view - rear */}
-        <rect x="30" y="87" width="60" height="65" rx="10" />
-        <rect x="40" y="97" width="40" height="20" rx="3" />
-        <rect x="40" y="124" width="40" height="22" rx="3" />
-        <circle cx="34" cy="146" r="2" />
-        <circle cx="86" cy="146" r="2" />
+    <svg viewBox="0 0 140 170" width="105" height="128" style={{ display: "block" }} xmlns="http://www.w3.org/2000/svg">
+      <g fill="none" stroke="#000" strokeWidth="1.3" strokeLinejoin="round" strokeLinecap="round">
+        {/* ===== TOP VIEW ===== */}
+        {/* Body outline */}
+        <path d="M40 6 Q70 2 100 6 L108 30 Q110 55 108 80 L100 88 Q70 92 40 88 L32 80 Q30 55 32 30 Z" />
+        {/* Hood line */}
+        <path d="M40 22 Q70 20 100 22" />
+        {/* Windshield */}
+        <path d="M43 24 L46 40 L94 40 L97 24" />
+        {/* Roof */}
+        <rect x="46" y="40" width="48" height="22" />
+        {/* Rear windshield */}
+        <path d="M46 62 L43 74 L97 74 L94 62" />
+        {/* Trunk line */}
+        <path d="M40 74 Q70 76 100 74" />
+        {/* Side mirrors */}
+        <rect x="28" y="30" width="4" height="5" />
+        <rect x="108" y="30" width="4" height="5" />
+        {/* Wheels (top) */}
+        <rect x="30" y="18" width="4" height="8" />
+        <rect x="106" y="18" width="4" height="8" />
+        <rect x="30" y="66" width="4" height="8" />
+        <rect x="106" y="66" width="4" height="8" />
+
+        {/* Divider */}
+        <line x1="10" y1="98" x2="130" y2="98" strokeDasharray="2 2" />
+
+        {/* ===== SIDE VIEW ===== */}
+        {/* Lower body */}
+        <path d="M12 150 L20 138 L36 132 L58 128 L92 128 L112 132 L126 138 L130 150 Z" />
+        {/* Cabin/roof */}
+        <path d="M42 128 L54 112 L96 112 L108 128" />
+        {/* Windows */}
+        <line x1="70" y1="112" x2="70" y2="128" />
+        {/* Doors */}
+        <line x1="70" y1="128" x2="70" y2="150" />
+        {/* Wheels (side) */}
+        <circle cx="34" cy="150" r="7" />
+        <circle cx="34" cy="150" r="2.5" />
+        <circle cx="108" cy="150" r="7" />
+        <circle cx="108" cy="150" r="2.5" />
+        {/* Handles */}
+        <line x1="50" y1="134" x2="60" y2="134" />
+        <line x1="80" y1="134" x2="90" y2="134" />
       </g>
     </svg>
   );
