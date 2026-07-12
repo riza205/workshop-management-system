@@ -622,12 +622,12 @@ function PrintableJobCard({
 
         {/* Workshop banner + Time/Date */}
         <div style={{ display: "grid", gridTemplateColumns: "60mm 1fr 40mm", borderTop: "2px solid #000" }}>
-          <div className="jc-cell" style={{ padding: "4px 6px" }}>
-            <div style={{ fontSize: "18pt", fontWeight: 800, fontStyle: "italic", lineHeight: 1 }}>Auto Scanners</div>
-            <div style={{ fontSize: "7.5pt", marginTop: 3, fontWeight: 600 }}>ISO : 9001 Paint Booth &amp;</div>
-            <div style={{ fontSize: "7.5pt", fontWeight: 600 }}>Computerized Auto Workshop</div>
+          <div className="jc-cell" style={{ padding: "3px 6px" }}>
+            <div style={{ fontSize: "15pt", fontWeight: 800, fontStyle: "italic", lineHeight: 1 }}>Auto Scanners</div>
+            <div style={{ fontSize: "7pt", marginTop: 2, fontWeight: 600 }}>ISO : 9001 Paint Booth &amp;</div>
+            <div style={{ fontSize: "7pt", fontWeight: 600 }}>Computerized Auto Workshop</div>
           </div>
-          <div className="jc-cell" style={{ textAlign: "center", padding: "6px 4px", fontWeight: 700, fontSize: "10pt", lineHeight: 1.3 }}>
+          <div className="jc-cell" style={{ textAlign: "center", padding: "4px 4px", fontWeight: 700, fontSize: "9pt", lineHeight: 1.25 }}>
             NEAR BENIGANJ RAILWAY CROSSING,<br />
             DEOKALI MANDIR ROAD<br />
             FAIZABAD (U.P.) MOB. : 9795225926
