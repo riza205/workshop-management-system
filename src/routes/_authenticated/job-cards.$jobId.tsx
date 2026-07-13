@@ -568,7 +568,7 @@ function PrintableJobCard({
           <div style={{ borderRight: "1px solid #000" }}>
             <div className="jc-title" style={{ textAlign: "center", padding: "3px", borderBottom: "1px solid #000" }}>SPARES</div>
             {spares.map((r, i) => (
-              <div key={`s${i}`} style={{ display: "grid", gridTemplateColumns: "1fr 20mm", borderBottom: "1px solid #000", minHeight: "16px" }}>
+              <div key={`s${i}`} style={{ display: "grid", gridTemplateColumns: "1fr 20mm", borderBottom: "1px solid #000", minHeight: "22px" }}>
                 <div className="jc-cell" style={{ borderLeft: "none", borderRight: "1px solid #000", borderTop: "none", borderBottom: "none", padding: "1px 3px" }}>{r.desc}</div>
                 <div className="jc-cell" style={{ border: "none", padding: "1px 3px", textAlign: "right" }}>{r.amount ? Number(r.amount).toFixed(0) : ""}</div>
               </div>
