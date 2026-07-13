@@ -15,10 +15,10 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ArrowLeft, Save, Printer, Download, Trash2, Upload, ImageOff, X, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { ArrowLeft, Save, Printer, Download, Trash2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { compressImage } from "@/lib/image-compress";
+import carDiagramAsset from "@/assets/car-diagram.jpeg.asset.json";
 import { JOB_STATUSES, STATUS_LABEL, type JobStatus } from "./job-cards.index";
 
 type LineItem = { desc: string; amount: number };
