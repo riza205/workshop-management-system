@@ -85,8 +85,6 @@ function JobCardDetailPage() {
   const { jobId } = Route.useParams();
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const fileRef = useRef<HTMLInputElement>(null);
-  const [viewIndex, setViewIndex] = useState<number | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [form, setForm] = useState<JobCard | null>(null);
 
