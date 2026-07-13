@@ -115,30 +115,6 @@ function JobCardDetailPage() {
   });
   const techName = employees.find((e) => e.id === form?.assigned_technician_id)?.name ?? "";
 
-  const { data: photos = [] } = useQuery({
-    queryKey: ["job_card_photos", jobId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("job_card_photos").select("*").eq("job_card_id", jobId)
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data as Photo[];
-    },
-  });
-
-  const { data: photoUrls = [] } = useQuery({
-    queryKey: ["job_card_photo_urls", jobId, photos.map((p) => p.id).join(",")],
-    enabled: photos.length > 0,
-    queryFn: async () => {
-      const paths = photos.map((p) => p.storage_path);
-      const { data, error } = await supabase.storage
-        .from("car-photos")
-        .createSignedUrls(paths, 60 * 60);
-      if (error) throw error;
-      return photos.map((p, i) => ({ ...p, url: data?.[i]?.signedUrl ?? "" }));
-    },
-  });
-
   const saveMut = useMutation({
     mutationFn: async (patch: Partial<JobCard>) => {
       const { error } = await supabase.from("job_cards").update(patch).eq("id", jobId);
@@ -154,8 +130,6 @@ function JobCardDetailPage() {
 
   const deleteMut = useMutation({
     mutationFn: async () => {
-      const paths = photos.map((p) => p.storage_path);
-      if (paths.length) await supabase.storage.from("car-photos").remove(paths);
       const { error } = await supabase.from("job_cards").delete().eq("id", jobId);
       if (error) throw error;
     },
@@ -166,34 +140,6 @@ function JobCardDetailPage() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
-
-  const uploadPhotos = async (files: FileList | null) => {
-    if (!files || !files.length) return;
-    const arr = Array.from(files);
-    toast.message(`Uploading ${arr.length} photo${arr.length === 1 ? "" : "s"}...`);
-    for (const file of arr) {
-      try {
-        const compressed = await compressImage(file);
-        const path = `job-cards/${jobId}/${crypto.randomUUID()}.jpg`;
-        const { error: upErr } = await supabase.storage
-          .from("car-photos").upload(path, compressed, { contentType: "image/jpeg" });
-        if (upErr) throw upErr;
-        const { error: insErr } = await supabase
-          .from("job_card_photos").insert({ job_card_id: jobId, storage_path: path });
-        if (insErr) throw insErr;
-      } catch (e) {
-        toast.error(`Upload failed: ${(e as Error).message}`);
-      }
-    }
-    qc.invalidateQueries({ queryKey: ["job_card_photos", jobId] });
-    if (fileRef.current) fileRef.current.value = "";
-  };
-
-  const deletePhoto = async (p: Photo) => {
-    await supabase.storage.from("car-photos").remove([p.storage_path]);
-    await supabase.from("job_card_photos").delete().eq("id", p.id);
-    qc.invalidateQueries({ queryKey: ["job_card_photos", jobId] });
-  };
 
   if (isLoading || !form) return <p className="py-10 text-center text-muted-foreground">Loading...</p>;
 
