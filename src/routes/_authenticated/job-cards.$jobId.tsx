@@ -623,7 +623,7 @@ function PrintableJobCard({
             {CHECKLIST_ITEMS.map((item) => {
               const v = form.checklist[item] ?? "no";
               return (
-                <div key={item} style={{ display: "grid", gridTemplateColumns: "1fr 12mm 12mm", borderBottom: "1px solid #000", minHeight: "17px" }}>
+                <div key={item} style={{ display: "grid", gridTemplateColumns: "1fr 12mm 12mm", borderBottom: "1px solid #000", minHeight: "22px" }}>
                   <div className="jc-cell" style={{ border: "none", borderRight: "1px solid #000", fontWeight: 700, fontSize: "8.5pt", padding: "1px 4px", textTransform: "uppercase" }}>{item}</div>
                   <div className={`jc-cell ${v === "yes" ? "jc-marked" : ""}`} style={{ border: "none", borderRight: "1px solid #000", textAlign: "center", fontWeight: 700, padding: "1px" }}>YES</div>
                   <div className={`jc-cell ${v === "no" ? "jc-marked" : ""}`} style={{ border: "none", textAlign: "center", fontWeight: 700, padding: "1px" }}>NO</div>
