@@ -531,9 +531,9 @@ function PrintableJobCard({
             { l: "ADDITIONAL JOBS", v: form.additional_jobs },
             { l: "TECHNICAL ADVICE", v: form.technical_advice },
           ].map((c) => (
-            <div key={c.l} className="jc-cell" style={{ minHeight: "28mm", padding: 0 }}>
-              <div className="jc-title" style={{ textAlign: "center", borderBottom: "1px solid #000", padding: "2px" }}>{c.l}</div>
-              <div style={{ padding: "2px 3px", whiteSpace: "pre-wrap", fontSize: "8pt", lineHeight: "14px", backgroundImage: "repeating-linear-gradient(transparent, transparent 13px, #000 13px, #000 14px)", minHeight: "25mm" }}>
+            <div key={c.l} className="jc-cell" style={{ minHeight: "36mm", padding: 0 }}>
+              <div className="jc-title" style={{ textAlign: "center", borderBottom: "1px solid #000", padding: "3px" }}>{c.l}</div>
+              <div style={{ padding: "3px 4px", whiteSpace: "pre-wrap", fontSize: "9pt", lineHeight: "16px", backgroundImage: "repeating-linear-gradient(transparent, transparent 15px, #000 15px, #000 16px)", minHeight: "32mm" }}>
                 {c.v || ""}
               </div>
             </div>
