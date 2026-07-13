@@ -68,7 +68,6 @@ type JobCard = {
 };
 
 type Employee = { id: string; name: string; role: string; phone: string };
-type Photo = { id: string; job_card_id: string; storage_path: string; created_at: string };
 
 export const Route = createFileRoute("/_authenticated/job-cards/$jobId")({
   component: JobCardDetailPage,
