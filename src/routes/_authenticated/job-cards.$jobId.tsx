@@ -361,36 +361,6 @@ function JobCardDetailPage() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Vehicle Photos</CardTitle>
-              <div>
-                <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => uploadPhotos(e.target.files)} />
-                <Button variant="outline" size="lg" onClick={() => fileRef.current?.click()} className="gap-2">
-                  <Upload className="h-4 w-4" /> Upload
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {photoUrls.length === 0 ? (
-                <div className="flex flex-col items-center gap-2 py-6 text-muted-foreground">
-                  <ImageOff className="h-8 w-8" />
-                  <span>No photos yet</span>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-                  {photoUrls.map((p) => (
-                    <div key={p.id} className="group relative aspect-square overflow-hidden rounded-lg border bg-muted">
-                      <img src={p.url} alt="" className="h-full w-full cursor-pointer object-cover" onClick={() => setViewIndex(photoUrls.findIndex((x) => x.id === p.id))} />
-                      <button onClick={() => deletePhoto(p)} className="absolute right-1 top-1 rounded-md bg-black/60 p-1 text-white opacity-0 transition group-hover:opacity-100" aria-label="Delete">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
 
           <div className="flex justify-end">
             <Button variant="destructive" size="lg" onClick={() => setConfirmDelete(true)} className="gap-2">
