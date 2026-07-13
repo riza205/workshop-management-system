@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -15,10 +15,10 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ArrowLeft, Save, Printer, Download, Trash2, Upload, ImageOff, X, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { ArrowLeft, Save, Printer, Download, Trash2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { compressImage } from "@/lib/image-compress";
+import carDiagramAsset from "@/assets/car-diagram.jpeg.asset.json";
 import { JOB_STATUSES, STATUS_LABEL, type JobStatus } from "./job-cards.index";
 
 type LineItem = { desc: string; amount: number };
@@ -68,7 +68,6 @@ type JobCard = {
 };
 
 type Employee = { id: string; name: string; role: string; phone: string };
-type Photo = { id: string; job_card_id: string; storage_path: string; created_at: string };
 
 export const Route = createFileRoute("/_authenticated/job-cards/$jobId")({
   component: JobCardDetailPage,
@@ -80,14 +79,13 @@ const CHECKLIST_ITEMS = [
   "Perfume", "Speaker F/R", "Side View Mirror", "Side Bedding", "Safety Guard",
 ] as const;
 
-const BRAND_LOGOS = ["TOYOTA", "TATA", "Mahindra", "Ford", "NISSAN", "HYUNDAI", "GM", "MARUTI"];
+
+
 
 function JobCardDetailPage() {
   const { jobId } = Route.useParams();
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const fileRef = useRef<HTMLInputElement>(null);
-  const [viewIndex, setViewIndex] = useState<number | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [form, setForm] = useState<JobCard | null>(null);
 
@@ -118,30 +116,6 @@ function JobCardDetailPage() {
   });
   const techName = employees.find((e) => e.id === form?.assigned_technician_id)?.name ?? "";
 
-  const { data: photos = [] } = useQuery({
-    queryKey: ["job_card_photos", jobId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("job_card_photos").select("*").eq("job_card_id", jobId)
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data as Photo[];
-    },
-  });
-
-  const { data: photoUrls = [] } = useQuery({
-    queryKey: ["job_card_photo_urls", jobId, photos.map((p) => p.id).join(",")],
-    enabled: photos.length > 0,
-    queryFn: async () => {
-      const paths = photos.map((p) => p.storage_path);
-      const { data, error } = await supabase.storage
-        .from("car-photos")
-        .createSignedUrls(paths, 60 * 60);
-      if (error) throw error;
-      return photos.map((p, i) => ({ ...p, url: data?.[i]?.signedUrl ?? "" }));
-    },
-  });
-
   const saveMut = useMutation({
     mutationFn: async (patch: Partial<JobCard>) => {
       const { error } = await supabase.from("job_cards").update(patch).eq("id", jobId);
@@ -157,8 +131,6 @@ function JobCardDetailPage() {
 
   const deleteMut = useMutation({
     mutationFn: async () => {
-      const paths = photos.map((p) => p.storage_path);
-      if (paths.length) await supabase.storage.from("car-photos").remove(paths);
       const { error } = await supabase.from("job_cards").delete().eq("id", jobId);
       if (error) throw error;
     },
@@ -169,34 +141,6 @@ function JobCardDetailPage() {
     },
     onError: (e: Error) => toast.error(e.message),
   });
-
-  const uploadPhotos = async (files: FileList | null) => {
-    if (!files || !files.length) return;
-    const arr = Array.from(files);
-    toast.message(`Uploading ${arr.length} photo${arr.length === 1 ? "" : "s"}...`);
-    for (const file of arr) {
-      try {
-        const compressed = await compressImage(file);
-        const path = `job-cards/${jobId}/${crypto.randomUUID()}.jpg`;
-        const { error: upErr } = await supabase.storage
-          .from("car-photos").upload(path, compressed, { contentType: "image/jpeg" });
-        if (upErr) throw upErr;
-        const { error: insErr } = await supabase
-          .from("job_card_photos").insert({ job_card_id: jobId, storage_path: path });
-        if (insErr) throw insErr;
-      } catch (e) {
-        toast.error(`Upload failed: ${(e as Error).message}`);
-      }
-    }
-    qc.invalidateQueries({ queryKey: ["job_card_photos", jobId] });
-    if (fileRef.current) fileRef.current.value = "";
-  };
-
-  const deletePhoto = async (p: Photo) => {
-    await supabase.storage.from("car-photos").remove([p.storage_path]);
-    await supabase.from("job_card_photos").delete().eq("id", p.id);
-    qc.invalidateQueries({ queryKey: ["job_card_photos", jobId] });
-  };
 
   if (isLoading || !form) return <p className="py-10 text-center text-muted-foreground">Loading...</p>;
 
@@ -418,36 +362,6 @@ function JobCardDetailPage() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Vehicle Photos</CardTitle>
-              <div>
-                <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => uploadPhotos(e.target.files)} />
-                <Button variant="outline" size="lg" onClick={() => fileRef.current?.click()} className="gap-2">
-                  <Upload className="h-4 w-4" /> Upload
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {photoUrls.length === 0 ? (
-                <div className="flex flex-col items-center gap-2 py-6 text-muted-foreground">
-                  <ImageOff className="h-8 w-8" />
-                  <span>No photos yet</span>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-                  {photoUrls.map((p) => (
-                    <div key={p.id} className="group relative aspect-square overflow-hidden rounded-lg border bg-muted">
-                      <img src={p.url} alt="" className="h-full w-full cursor-pointer object-cover" onClick={() => setViewIndex(photoUrls.findIndex((x) => x.id === p.id))} />
-                      <button onClick={() => deletePhoto(p)} className="absolute right-1 top-1 rounded-md bg-black/60 p-1 text-white opacity-0 transition group-hover:opacity-100" aria-label="Delete">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
 
           <div className="flex justify-end">
             <Button variant="destructive" size="lg" onClick={() => setConfirmDelete(true)} className="gap-2">
@@ -465,12 +379,6 @@ function JobCardDetailPage() {
         techName={techName}
       />
 
-      <Lightbox
-        photos={photoUrls.map((p) => p.url)}
-        index={viewIndex}
-        onClose={() => setViewIndex(null)}
-        onChange={setViewIndex}
-      />
 
       <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
         <AlertDialogContent>
@@ -497,71 +405,6 @@ function Field({ label, children, full }: { label: string; children: React.React
   );
 }
 
-function Lightbox({
-  photos, index, onClose, onChange,
-}: {
-  photos: string[];
-  index: number | null;
-  onClose: () => void;
-  onChange: (i: number) => void;
-}) {
-  const open = index !== null && index >= 0 && index < photos.length;
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-      if (e.key === "ArrowLeft" && index! > 0) onChange(index! - 1);
-      if (e.key === "ArrowRight" && index! < photos.length - 1) onChange(index! + 1);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open, index, photos.length, onClose, onChange]);
-
-  if (!open) return null;
-  const i = index!;
-  return (
-    <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4"
-      onClick={onClose}
-      role="dialog"
-      aria-modal="true"
-    >
-      <button onClick={(e) => { e.stopPropagation(); onClose(); }} className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white hover:bg-white/20" aria-label="Close">
-        <X className="h-6 w-6" />
-      </button>
-      {i > 0 && (
-        <button onClick={(e) => { e.stopPropagation(); onChange(i - 1); }} className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-2 text-white hover:bg-white/20" aria-label="Previous">
-          <ChevronLeft className="h-7 w-7" />
-        </button>
-      )}
-      {i < photos.length - 1 && (
-        <button onClick={(e) => { e.stopPropagation(); onChange(i + 1); }} className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-2 text-white hover:bg-white/20" aria-label="Next">
-          <ChevronRight className="h-7 w-7" />
-        </button>
-      )}
-      <LightboxImage src={photos[i]} />
-      {photos.length > 1 && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-white/10 px-3 py-1 text-sm text-white">
-          {i + 1} / {photos.length}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function LightboxImage({ src }: { src: string }) {
-  const [errored, setErrored] = useState(false);
-  useEffect(() => { setErrored(false); }, [src]);
-  if (!src || errored) {
-    return (
-      <div onClick={(e) => e.stopPropagation()} className="flex flex-col items-center gap-2 rounded-md bg-white/5 px-8 py-12 text-white">
-        <ImageOff className="h-10 w-10 opacity-70" />
-        <p className="text-sm">Image could not be loaded</p>
-      </div>
-    );
-  }
-  return <img src={src} alt="" onClick={(e) => e.stopPropagation()} onError={() => setErrored(true)} className="max-h-[90vh] max-w-[92vw] object-contain" />;
-}
 
 /* ============================================================
    PRINTABLE JOB CARD — faithful recreation of the paper form
@@ -587,17 +430,17 @@ function PrintableJobCard({
   return (
     <div className="print-jc hidden print:block">
       <style>{`
-        @page { size: A4 portrait; margin: 6mm; }
+        @page { size: A4 portrait; margin: 8mm; }
         @media print {
           html, body { background: white !important; }
-          .print-jc { color: black; font-family: Arial, Helvetica, sans-serif; font-size: 8pt; }
+          .print-jc { color: black; font-family: Arial, Helvetica, sans-serif; font-size: 9pt; }
           .print-jc * { box-sizing: border-box; }
         }
         .jc-box { border: 2px solid #000; }
-        .jc-cell { border: 1px solid #000; padding: 1px 3px; }
-        .jc-title { font-weight: 700; text-transform: uppercase; font-size: 7.5pt; letter-spacing: 0.02em; }
+        .jc-cell { border: 1px solid #000; padding: 2px 4px; }
+        .jc-title { font-weight: 700; text-transform: uppercase; font-size: 9pt; letter-spacing: 0.02em; }
         .jc-h { font-weight: 700; }
-        .jc-line { min-height: 12px; }
+        .jc-line { min-height: 16px; }
         .jc-underline { border-bottom: 1px solid #000; min-height: 12px; padding: 0 2px; }
         .jc-check-yes, .jc-check-no { display: inline-block; width: 16px; text-align: center; font-weight: 700; }
         .jc-marked { background: #000; color: #fff; }
@@ -615,10 +458,8 @@ function PrintableJobCard({
           </div>
         </div>
 
-        {/* Brand strip */}
-        <div className="jc-cell" style={{ display: "flex", justifyContent: "space-around", alignItems: "center", padding: "3px 4px", fontSize: "8pt", fontWeight: 700 }}>
-          {BRAND_LOGOS.map((b) => <span key={b}>{b}</span>)}
-        </div>
+
+
 
         {/* Workshop banner + Time/Date */}
         <div style={{ display: "grid", gridTemplateColumns: "60mm 1fr 40mm", borderTop: "2px solid #000" }}>
@@ -690,9 +531,9 @@ function PrintableJobCard({
             { l: "ADDITIONAL JOBS", v: form.additional_jobs },
             { l: "TECHNICAL ADVICE", v: form.technical_advice },
           ].map((c) => (
-            <div key={c.l} className="jc-cell" style={{ minHeight: "28mm", padding: 0 }}>
-              <div className="jc-title" style={{ textAlign: "center", borderBottom: "1px solid #000", padding: "2px" }}>{c.l}</div>
-              <div style={{ padding: "2px 3px", whiteSpace: "pre-wrap", fontSize: "8pt", lineHeight: "14px", backgroundImage: "repeating-linear-gradient(transparent, transparent 13px, #000 13px, #000 14px)", minHeight: "25mm" }}>
+            <div key={c.l} className="jc-cell" style={{ minHeight: "36mm", padding: 0 }}>
+              <div className="jc-title" style={{ textAlign: "center", borderBottom: "1px solid #000", padding: "3px" }}>{c.l}</div>
+              <div style={{ padding: "3px 4px", whiteSpace: "pre-wrap", fontSize: "9pt", lineHeight: "16px", backgroundImage: "repeating-linear-gradient(transparent, transparent 15px, #000 15px, #000 16px)", minHeight: "32mm" }}>
                 {c.v || ""}
               </div>
             </div>
@@ -727,7 +568,7 @@ function PrintableJobCard({
           <div style={{ borderRight: "1px solid #000" }}>
             <div className="jc-title" style={{ textAlign: "center", padding: "3px", borderBottom: "1px solid #000" }}>SPARES</div>
             {spares.map((r, i) => (
-              <div key={`s${i}`} style={{ display: "grid", gridTemplateColumns: "1fr 20mm", borderBottom: "1px solid #000", minHeight: "16px" }}>
+              <div key={`s${i}`} style={{ display: "grid", gridTemplateColumns: "1fr 20mm", borderBottom: "1px solid #000", minHeight: "22px" }}>
                 <div className="jc-cell" style={{ borderLeft: "none", borderRight: "1px solid #000", borderTop: "none", borderBottom: "none", padding: "1px 3px" }}>{r.desc}</div>
                 <div className="jc-cell" style={{ border: "none", padding: "1px 3px", textAlign: "right" }}>{r.amount ? Number(r.amount).toFixed(0) : ""}</div>
               </div>
@@ -739,7 +580,7 @@ function PrintableJobCard({
 
             <div className="jc-title" style={{ textAlign: "center", padding: "3px", borderBottom: "1px solid #000", borderTop: "1px solid #000" }}>LABOUR</div>
             {labour.map((r, i) => (
-              <div key={`l${i}`} style={{ display: "grid", gridTemplateColumns: "1fr 20mm", borderBottom: "1px solid #000", minHeight: "16px" }}>
+              <div key={`l${i}`} style={{ display: "grid", gridTemplateColumns: "1fr 20mm", borderBottom: "1px solid #000", minHeight: "24px" }}>
                 <div className="jc-cell" style={{ border: "none", borderRight: "1px solid #000", padding: "1px 3px" }}>{r.desc}</div>
                 <div className="jc-cell" style={{ border: "none", padding: "1px 3px", textAlign: "right" }}>{r.amount ? Number(r.amount).toFixed(0) : ""}</div>
               </div>
@@ -782,7 +623,7 @@ function PrintableJobCard({
             {CHECKLIST_ITEMS.map((item) => {
               const v = form.checklist[item] ?? "no";
               return (
-                <div key={item} style={{ display: "grid", gridTemplateColumns: "1fr 12mm 12mm", borderBottom: "1px solid #000", minHeight: "17px" }}>
+                <div key={item} style={{ display: "grid", gridTemplateColumns: "1fr 12mm 12mm", borderBottom: "1px solid #000", minHeight: "22px" }}>
                   <div className="jc-cell" style={{ border: "none", borderRight: "1px solid #000", fontWeight: 700, fontSize: "8.5pt", padding: "1px 4px", textTransform: "uppercase" }}>{item}</div>
                   <div className={`jc-cell ${v === "yes" ? "jc-marked" : ""}`} style={{ border: "none", borderRight: "1px solid #000", textAlign: "center", fontWeight: 700, padding: "1px" }}>YES</div>
                   <div className={`jc-cell ${v === "no" ? "jc-marked" : ""}`} style={{ border: "none", textAlign: "center", fontWeight: 700, padding: "1px" }}>NO</div>
@@ -820,51 +661,10 @@ function PrintableJobCard({
 
 function CarDiagram() {
   return (
-    <svg viewBox="0 0 140 170" width="105" height="128" style={{ display: "block" }} xmlns="http://www.w3.org/2000/svg">
-      <g fill="none" stroke="#000" strokeWidth="1.3" strokeLinejoin="round" strokeLinecap="round">
-        {/* ===== TOP VIEW ===== */}
-        {/* Body outline */}
-        <path d="M40 6 Q70 2 100 6 L108 30 Q110 55 108 80 L100 88 Q70 92 40 88 L32 80 Q30 55 32 30 Z" />
-        {/* Hood line */}
-        <path d="M40 22 Q70 20 100 22" />
-        {/* Windshield */}
-        <path d="M43 24 L46 40 L94 40 L97 24" />
-        {/* Roof */}
-        <rect x="46" y="40" width="48" height="22" />
-        {/* Rear windshield */}
-        <path d="M46 62 L43 74 L97 74 L94 62" />
-        {/* Trunk line */}
-        <path d="M40 74 Q70 76 100 74" />
-        {/* Side mirrors */}
-        <rect x="28" y="30" width="4" height="5" />
-        <rect x="108" y="30" width="4" height="5" />
-        {/* Wheels (top) */}
-        <rect x="30" y="18" width="4" height="8" />
-        <rect x="106" y="18" width="4" height="8" />
-        <rect x="30" y="66" width="4" height="8" />
-        <rect x="106" y="66" width="4" height="8" />
-
-        {/* Divider */}
-        <line x1="10" y1="98" x2="130" y2="98" strokeDasharray="2 2" />
-
-        {/* ===== SIDE VIEW ===== */}
-        {/* Lower body */}
-        <path d="M12 150 L20 138 L36 132 L58 128 L92 128 L112 132 L126 138 L130 150 Z" />
-        {/* Cabin/roof */}
-        <path d="M42 128 L54 112 L96 112 L108 128" />
-        {/* Windows */}
-        <line x1="70" y1="112" x2="70" y2="128" />
-        {/* Doors */}
-        <line x1="70" y1="128" x2="70" y2="150" />
-        {/* Wheels (side) */}
-        <circle cx="34" cy="150" r="7" />
-        <circle cx="34" cy="150" r="2.5" />
-        <circle cx="108" cy="150" r="7" />
-        <circle cx="108" cy="150" r="2.5" />
-        {/* Handles */}
-        <line x1="50" y1="134" x2="60" y2="134" />
-        <line x1="80" y1="134" x2="90" y2="134" />
-      </g>
-    </svg>
+    <img
+      src={carDiagramAsset.url}
+      alt="Car body diagram"
+      style={{ display: "block", width: "100%", maxWidth: "50mm", height: "auto", objectFit: "contain" }}
+    />
   );
 }
