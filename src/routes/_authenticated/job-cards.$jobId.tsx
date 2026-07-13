@@ -430,17 +430,17 @@ function PrintableJobCard({
   return (
     <div className="print-jc hidden print:block">
       <style>{`
-        @page { size: A4 portrait; margin: 6mm; }
+        @page { size: A4 portrait; margin: 8mm; }
         @media print {
           html, body { background: white !important; }
-          .print-jc { color: black; font-family: Arial, Helvetica, sans-serif; font-size: 8pt; }
+          .print-jc { color: black; font-family: Arial, Helvetica, sans-serif; font-size: 9pt; }
           .print-jc * { box-sizing: border-box; }
         }
         .jc-box { border: 2px solid #000; }
-        .jc-cell { border: 1px solid #000; padding: 1px 3px; }
-        .jc-title { font-weight: 700; text-transform: uppercase; font-size: 7.5pt; letter-spacing: 0.02em; }
+        .jc-cell { border: 1px solid #000; padding: 2px 4px; }
+        .jc-title { font-weight: 700; text-transform: uppercase; font-size: 9pt; letter-spacing: 0.02em; }
         .jc-h { font-weight: 700; }
-        .jc-line { min-height: 12px; }
+        .jc-line { min-height: 16px; }
         .jc-underline { border-bottom: 1px solid #000; min-height: 12px; padding: 0 2px; }
         .jc-check-yes, .jc-check-no { display: inline-block; width: 16px; text-align: center; font-weight: 700; }
         .jc-marked { background: #000; color: #fff; }
