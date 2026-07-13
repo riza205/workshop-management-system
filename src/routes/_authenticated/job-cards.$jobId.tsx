@@ -378,12 +378,6 @@ function JobCardDetailPage() {
         techName={techName}
       />
 
-      <Lightbox
-        photos={photoUrls.map((p) => p.url)}
-        index={viewIndex}
-        onClose={() => setViewIndex(null)}
-        onChange={setViewIndex}
-      />
 
       <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
         <AlertDialogContent>
