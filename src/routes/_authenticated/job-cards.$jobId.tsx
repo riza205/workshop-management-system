@@ -457,10 +457,8 @@ function PrintableJobCard({
           </div>
         </div>
 
-        {/* Brand strip */}
-        <div className="jc-cell" style={{ display: "flex", justifyContent: "space-around", alignItems: "center", padding: "3px 4px", fontSize: "8pt", fontWeight: 700 }}>
-          {BRAND_LOGOS.map((b) => <span key={b}>{b}</span>)}
-        </div>
+
+
 
         {/* Workshop banner + Time/Date */}
         <div style={{ display: "grid", gridTemplateColumns: "60mm 1fr 40mm", borderTop: "2px solid #000" }}>
