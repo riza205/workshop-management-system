@@ -79,7 +79,8 @@ const CHECKLIST_ITEMS = [
   "Perfume", "Speaker F/R", "Side View Mirror", "Side Bedding", "Safety Guard",
 ] as const;
 
-const BRAND_LOGOS = ["TOYOTA", "TATA", "Mahindra", "Ford", "NISSAN", "HYUNDAI", "GM", "MARUTI"];
+
+
 
 function JobCardDetailPage() {
   const { jobId } = Route.useParams();
