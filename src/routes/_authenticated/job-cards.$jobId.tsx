@@ -580,7 +580,7 @@ function PrintableJobCard({
 
             <div className="jc-title" style={{ textAlign: "center", padding: "3px", borderBottom: "1px solid #000", borderTop: "1px solid #000" }}>LABOUR</div>
             {labour.map((r, i) => (
-              <div key={`l${i}`} style={{ display: "grid", gridTemplateColumns: "1fr 20mm", borderBottom: "1px solid #000", minHeight: "16px" }}>
+              <div key={`l${i}`} style={{ display: "grid", gridTemplateColumns: "1fr 20mm", borderBottom: "1px solid #000", minHeight: "24px" }}>
                 <div className="jc-cell" style={{ border: "none", borderRight: "1px solid #000", padding: "1px 3px" }}>{r.desc}</div>
                 <div className="jc-cell" style={{ border: "none", padding: "1px 3px", textAlign: "right" }}>{r.amount ? Number(r.amount).toFixed(0) : ""}</div>
               </div>
