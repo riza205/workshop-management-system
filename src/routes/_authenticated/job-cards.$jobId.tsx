@@ -662,51 +662,10 @@ function PrintableJobCard({
 
 function CarDiagram() {
   return (
-    <svg viewBox="0 0 140 170" width="105" height="128" style={{ display: "block" }} xmlns="http://www.w3.org/2000/svg">
-      <g fill="none" stroke="#000" strokeWidth="1.3" strokeLinejoin="round" strokeLinecap="round">
-        {/* ===== TOP VIEW ===== */}
-        {/* Body outline */}
-        <path d="M40 6 Q70 2 100 6 L108 30 Q110 55 108 80 L100 88 Q70 92 40 88 L32 80 Q30 55 32 30 Z" />
-        {/* Hood line */}
-        <path d="M40 22 Q70 20 100 22" />
-        {/* Windshield */}
-        <path d="M43 24 L46 40 L94 40 L97 24" />
-        {/* Roof */}
-        <rect x="46" y="40" width="48" height="22" />
-        {/* Rear windshield */}
-        <path d="M46 62 L43 74 L97 74 L94 62" />
-        {/* Trunk line */}
-        <path d="M40 74 Q70 76 100 74" />
-        {/* Side mirrors */}
-        <rect x="28" y="30" width="4" height="5" />
-        <rect x="108" y="30" width="4" height="5" />
-        {/* Wheels (top) */}
-        <rect x="30" y="18" width="4" height="8" />
-        <rect x="106" y="18" width="4" height="8" />
-        <rect x="30" y="66" width="4" height="8" />
-        <rect x="106" y="66" width="4" height="8" />
-
-        {/* Divider */}
-        <line x1="10" y1="98" x2="130" y2="98" strokeDasharray="2 2" />
-
-        {/* ===== SIDE VIEW ===== */}
-        {/* Lower body */}
-        <path d="M12 150 L20 138 L36 132 L58 128 L92 128 L112 132 L126 138 L130 150 Z" />
-        {/* Cabin/roof */}
-        <path d="M42 128 L54 112 L96 112 L108 128" />
-        {/* Windows */}
-        <line x1="70" y1="112" x2="70" y2="128" />
-        {/* Doors */}
-        <line x1="70" y1="128" x2="70" y2="150" />
-        {/* Wheels (side) */}
-        <circle cx="34" cy="150" r="7" />
-        <circle cx="34" cy="150" r="2.5" />
-        <circle cx="108" cy="150" r="7" />
-        <circle cx="108" cy="150" r="2.5" />
-        {/* Handles */}
-        <line x1="50" y1="134" x2="60" y2="134" />
-        <line x1="80" y1="134" x2="90" y2="134" />
-      </g>
-    </svg>
+    <img
+      src={carDiagramAsset.url}
+      alt="Car body diagram"
+      style={{ display: "block", width: "100%", maxWidth: "50mm", height: "auto", objectFit: "contain" }}
+    />
   );
 }
