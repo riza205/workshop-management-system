@@ -18,6 +18,7 @@ function AppShell() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const sectionKey = pathname.split("/")[1] || "home";
 
   const signOut = async () => {
     await queryClient.cancelQueries();
@@ -26,11 +27,17 @@ function AppShell() {
     navigate({ to: "/auth", replace: true });
   };
 
-  const navItem = (to: string, label: string, Icon: typeof Users) => {
+  const navItem = (to: "/dashboard" | "/cars" | "/job-cards" | "/employees" | "/attendance" | "/workload", label: string, Icon: typeof Users) => {
     const active = pathname.startsWith(to);
     return (
       <Link
         to={to}
+        search={{}}
+        hash=""
+        resetScroll
+        onClick={() => {
+          if (!active) void queryClient.cancelQueries();
+        }}
         className={`flex items-center gap-2 rounded-lg px-4 py-3 text-base font-medium transition-colors ${
           active ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-accent"
         }`}
@@ -68,7 +75,7 @@ function AppShell() {
         </nav>
       </header>
       <main className="mx-auto max-w-6xl px-4 py-6">
-        <Outlet />
+        <Outlet key={sectionKey} />
       </main>
     </div>
   );

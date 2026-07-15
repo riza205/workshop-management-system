@@ -10,7 +10,6 @@ import { Wrench } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
-  ssr: false,
   component: AuthPage,
 });
 
@@ -21,9 +20,13 @@ function AuthPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    let mounted = true;
     supabase.auth.getUser().then(({ data }) => {
-      if (data.user) navigate({ to: "/employees", replace: true });
+      if (mounted && data.user) navigate({ to: "/employees", replace: true });
     });
+    return () => {
+      mounted = false;
+    };
   }, [navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
