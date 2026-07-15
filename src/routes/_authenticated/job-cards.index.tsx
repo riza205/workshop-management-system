@@ -10,34 +10,7 @@ import {
 } from "@/components/ui/select";
 import { Plus, Search, FileText, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
-
-export const JOB_STATUSES = [
-  "open",
-  "in_progress",
-  "awaiting_approval",
-  "completed",
-  "delivered",
-  "cancelled",
-] as const;
-export type JobStatus = (typeof JOB_STATUSES)[number];
-
-export const STATUS_LABEL: Record<JobStatus, string> = {
-  open: "Open",
-  in_progress: "In Progress",
-  awaiting_approval: "Awaiting Approval",
-  completed: "Completed",
-  delivered: "Delivered",
-  cancelled: "Cancelled",
-};
-
-export const STATUS_CLASS: Record<JobStatus, string> = {
-  open: "bg-sky-500/15 text-sky-700 dark:text-sky-300 border-sky-500/30",
-  in_progress: "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30",
-  awaiting_approval: "bg-violet-500/15 text-violet-700 dark:text-violet-300 border-violet-500/30",
-  completed: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
-  delivered: "bg-slate-500/15 text-slate-700 dark:text-slate-300 border-slate-500/30",
-  cancelled: "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30",
-};
+import { JOB_STATUSES, JOB_STATUS_CLASS, JOB_STATUS_LABEL, type JobStatus } from "@/lib/workshop-status";
 
 type JobCardRow = {
   id: string;
@@ -148,7 +121,7 @@ function JobCardsPage() {
             <SelectContent>
               <SelectItem value="all">All statuses</SelectItem>
               {JOB_STATUSES.map((s) => (
-                <SelectItem key={s} value={s}>{STATUS_LABEL[s]}</SelectItem>
+                <SelectItem key={s} value={s}>{JOB_STATUS_LABEL[s]}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -189,8 +162,8 @@ function JobCardsPage() {
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="font-mono text-sm font-semibold text-primary">{c.job_number}</span>
-                        <span className={`rounded-full border px-2 py-0.5 text-xs font-medium ${STATUS_CLASS[c.status]}`}>
-                          {STATUS_LABEL[c.status]}
+                        <span className={`rounded-full border px-2 py-0.5 text-xs font-medium ${JOB_STATUS_CLASS[c.status]}`}>
+                          {JOB_STATUS_LABEL[c.status]}
                         </span>
                       </div>
                       <div className="mt-1 truncate text-base font-semibold">{c.customer_name}</div>

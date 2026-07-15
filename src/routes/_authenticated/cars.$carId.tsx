@@ -18,7 +18,7 @@ import { ArrowLeft, Plus, Trash2, Upload, Car, User, Phone, Calendar, ImageOff }
 import { toast } from "sonner";
 import { compressImage } from "@/lib/image-compress";
 import { formatDate } from "@/lib/utils";
-import { STATUS_LABEL, STATUS_CLASS } from "./cars.index";
+import { CAR_STATUS_CLASS, CAR_STATUS_LABEL, type CarStatus } from "@/lib/workshop-status";
 
 type CarRow = {
   id: string;
@@ -27,7 +27,7 @@ type CarRow = {
   make_model: string;
   license_plate: string;
   date_in: string;
-  status: "in_progress" | "ready" | "delivered";
+  status: CarStatus;
 };
 
 type Task = {
@@ -140,8 +140,8 @@ function CarDetailPage() {
               </div>
             </div>
             <div className="flex flex-col items-end gap-2">
-              <div className={`rounded-full border px-3 py-1 text-xs font-semibold ${STATUS_CLASS[car.status]}`}>
-                {STATUS_LABEL[car.status]}
+              <div className={`rounded-full border px-3 py-1 text-xs font-semibold ${CAR_STATUS_CLASS[car.status]}`}>
+                {CAR_STATUS_LABEL[car.status]}
               </div>
               <Select value={car.status} onValueChange={(v) => updateStatus.mutate(v as CarRow["status"])}>
                 <SelectTrigger className="h-11 w-44"><SelectValue /></SelectTrigger>

@@ -19,7 +19,7 @@ import { ArrowLeft, Save, Printer, Download, Trash2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import carDiagramAsset from "@/assets/car-diagram.jpeg.asset.json";
 import { formatDate } from "@/lib/utils";
-import { JOB_STATUSES, STATUS_LABEL, type JobStatus } from "./job-cards.index";
+import { JOB_STATUSES, JOB_STATUS_LABEL, type JobStatus } from "@/lib/workshop-status";
 
 type LineItem = { desc: string; amount: number };
 
@@ -219,7 +219,7 @@ function JobCardDetailPage() {
               <SelectTrigger className="h-12 w-[200px] text-base"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {JOB_STATUSES.map((s) => (
-                  <SelectItem key={s} value={s}>{STATUS_LABEL[s]}</SelectItem>
+                  <SelectItem key={s} value={s}>{JOB_STATUS_LABEL[s]}</SelectItem>
                 ))}
               </SelectContent>
             </Select>

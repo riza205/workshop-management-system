@@ -16,6 +16,7 @@ import { Plus, Car, User, Phone, Calendar, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { formatDate } from "@/lib/utils";
+import { CAR_STATUS_CLASS, CAR_STATUS_LABEL, type CarStatus } from "@/lib/workshop-status";
 
 type CarRow = {
   id: string;
@@ -24,19 +25,7 @@ type CarRow = {
   make_model: string;
   license_plate: string;
   date_in: string;
-  status: "in_progress" | "ready" | "delivered";
-};
-
-export const STATUS_LABEL: Record<CarRow["status"], string> = {
-  in_progress: "In Progress",
-  ready: "Ready",
-  delivered: "Delivered",
-};
-
-export const STATUS_CLASS: Record<CarRow["status"], string> = {
-  in_progress: "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30",
-  ready: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
-  delivered: "bg-slate-500/15 text-slate-700 dark:text-slate-300 border-slate-500/30",
+  status: CarStatus;
 };
 
 export const Route = createFileRoute("/_authenticated/cars/")({
@@ -82,7 +71,7 @@ function CarsPage() {
             onClick={() => setFilter(f)}
             className="h-11"
           >
-            {f === "all" ? "All" : STATUS_LABEL[f]}
+            {f === "all" ? "All" : CAR_STATUS_LABEL[f]}
             <span className="ml-2 text-xs opacity-75">
               {f === "all" ? cars.length : cars.filter((c) => c.status === f).length}
             </span>
@@ -129,8 +118,8 @@ function CarsPage() {
                     </div>
                     <ChevronRight className="h-5 w-5 text-muted-foreground" />
                   </div>
-                  <div className={`mt-4 inline-block rounded-full border px-3 py-1 text-xs font-semibold ${STATUS_CLASS[c.status]}`}>
-                    {STATUS_LABEL[c.status]}
+                  <div className={`mt-4 inline-block rounded-full border px-3 py-1 text-xs font-semibold ${CAR_STATUS_CLASS[c.status]}`}>
+                    {CAR_STATUS_LABEL[c.status]}
                   </div>
                 </CardContent>
               </Card>
