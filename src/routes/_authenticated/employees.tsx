@@ -16,6 +16,7 @@ import {
 import { Plus, Pencil, Trash2, Phone, Briefcase, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { formatDate } from "@/lib/utils";
 
 type Employee = {
   id: string;
@@ -97,7 +98,7 @@ function EmployeesPage() {
                     <div className="mt-2 space-y-1.5 text-sm text-muted-foreground">
                       <div className="flex items-center gap-2"><Briefcase className="h-4 w-4 shrink-0" /><span className="truncate">{emp.role}</span></div>
                       <div className="flex items-center gap-2"><Phone className="h-4 w-4 shrink-0" /><span className="truncate">{emp.phone}</span></div>
-                      <div className="flex items-center gap-2"><Calendar className="h-4 w-4 shrink-0" /><span>Joined {format(new Date(emp.date_joined), "dd MMM yyyy")}</span></div>
+                      <div className="flex items-center gap-2"><Calendar className="h-4 w-4 shrink-0" /><span>Joined {formatDate(emp.date_joined, "dd MMM yyyy")}</span></div>
                     </div>
                   </div>
                 </div>

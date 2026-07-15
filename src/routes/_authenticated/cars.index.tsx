@@ -15,6 +15,7 @@ import {
 import { Plus, Car, User, Phone, Calendar, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { formatDate } from "@/lib/utils";
 
 type CarRow = {
   id: string;
@@ -123,7 +124,7 @@ function CarsPage() {
                       <div className="mt-3 space-y-1.5 text-sm text-muted-foreground">
                         <div className="flex items-center gap-2"><User className="h-4 w-4 shrink-0" /><span className="truncate">{c.owner_name}</span></div>
                         <div className="flex items-center gap-2"><Phone className="h-4 w-4 shrink-0" /><span className="truncate">{c.owner_phone}</span></div>
-                        <div className="flex items-center gap-2"><Calendar className="h-4 w-4 shrink-0" /><span>In {format(new Date(c.date_in), "dd MMM yyyy")}</span></div>
+                        <div className="flex items-center gap-2"><Calendar className="h-4 w-4 shrink-0" /><span>In {formatDate(c.date_in, "dd MMM yyyy")}</span></div>
                       </div>
                     </div>
                     <ChevronRight className="h-5 w-5 text-muted-foreground" />

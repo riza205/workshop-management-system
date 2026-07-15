@@ -17,8 +17,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ArrowLeft, Save, Printer, Download, Trash2, Plus } from "lucide-react";
 import { toast } from "sonner";
-import { format } from "date-fns";
 import carDiagramAsset from "@/assets/car-diagram.jpeg.asset.json";
+import { formatDate } from "@/lib/utils";
 import { JOB_STATUSES, STATUS_LABEL, type JobStatus } from "./job-cards.index";
 
 type LineItem = { desc: string; amount: number };
@@ -89,11 +89,12 @@ function JobCardDetailPage() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [form, setForm] = useState<JobCard | null>(null);
 
-  const { data: card, isLoading } = useQuery({
+  const { data: card, isLoading, isError, error } = useQuery({
     queryKey: ["job_card", jobId],
     queryFn: async () => {
-      const { data, error } = await supabase.from("job_cards").select("*").eq("id", jobId).single();
+      const { data, error } = await supabase.from("job_cards").select("*").eq("id", jobId).maybeSingle();
       if (error) throw error;
+      if (!data) return null;
       const c = data as unknown as JobCard;
       return {
         ...c,
@@ -104,7 +105,9 @@ function JobCardDetailPage() {
     },
   });
 
-  useEffect(() => { if (card) setForm(card); }, [card]);
+  useEffect(() => {
+    setForm(card ?? null);
+  }, [card, jobId]);
 
   const { data: employees = [] } = useQuery({
     queryKey: ["employees"],
@@ -142,7 +145,24 @@ function JobCardDetailPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  if (isLoading || !form) return <p className="py-10 text-center text-muted-foreground">Loading...</p>;
+  if (isLoading) return <p className="py-10 text-center text-muted-foreground">Loading...</p>;
+  if (isError) {
+    return (
+      <div className="space-y-4 py-12 text-center print:hidden">
+        <p className="font-medium">Unable to load this job card.</p>
+        <p className="text-sm text-muted-foreground">{error instanceof Error ? error.message : "Please try again."}</p>
+        <Button asChild size="lg"><Link to="/job-cards">Back to job cards</Link></Button>
+      </div>
+    );
+  }
+  if (!form) {
+    return (
+      <div className="space-y-4 py-12 text-center print:hidden">
+        <p className="text-muted-foreground">Job card not found.</p>
+        <Button asChild size="lg"><Link to="/job-cards">Back to job cards</Link></Button>
+      </div>
+    );
+  }
 
   const set = <K extends keyof JobCard>(k: K, v: JobCard[K]) => setForm({ ...form, [k]: v });
   const num = (v: string) => (v === "" ? null : Number(v));
@@ -424,7 +444,7 @@ function PrintableJobCard({
   const LABOUR_ROWS = 5;
   const spares = [...form.spares, ...Array(Math.max(0, SPARES_ROWS - form.spares.length)).fill({ desc: "", amount: 0 })].slice(0, SPARES_ROWS);
   const labour = [...form.labour_items, ...Array(Math.max(0, LABOUR_ROWS - form.labour_items.length)).fill({ desc: "", amount: 0 })].slice(0, LABOUR_ROWS);
-  const dateStr = form.job_date ? format(new Date(form.job_date), "dd/MM/yy") : "";
+  const dateStr = form.job_date ? formatDate(form.job_date, "dd/MM/yy", "") : "";
   const timeStr = form.job_time?.slice(0, 5) ?? "";
 
   return (

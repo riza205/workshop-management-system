@@ -16,8 +16,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ArrowLeft, Plus, Trash2, Upload, Car, User, Phone, Calendar, ImageOff } from "lucide-react";
 import { toast } from "sonner";
-import { format } from "date-fns";
 import { compressImage } from "@/lib/image-compress";
+import { formatDate } from "@/lib/utils";
 import { STATUS_LABEL, STATUS_CLASS } from "./cars.index";
 
 type CarRow = {
@@ -57,7 +57,7 @@ function CarDetailPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
 
-  const { data: car, isLoading } = useQuery({
+  const { data: car, isLoading, isError, error } = useQuery({
     queryKey: ["car", carId],
     queryFn: async () => {
       const { data, error } = await supabase.from("cars").select("*").eq("id", carId).maybeSingle();
@@ -98,6 +98,15 @@ function CarDetailPage() {
   });
 
   if (isLoading) return <div className="py-12 text-center text-muted-foreground">Loading...</div>;
+  if (isError) {
+    return (
+      <div className="space-y-4 py-12 text-center">
+        <p className="font-medium">Unable to load this car.</p>
+        <p className="text-sm text-muted-foreground">{error instanceof Error ? error.message : "Please try again."}</p>
+        <Button asChild size="lg"><Link to="/cars">Back to cars</Link></Button>
+      </div>
+    );
+  }
   if (!car) {
     return (
       <div className="space-y-4 py-12 text-center">
@@ -127,7 +136,7 @@ function CarDetailPage() {
               <div className="mt-4 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
                 <div className="flex items-center gap-2"><User className="h-4 w-4" /> {car.owner_name}</div>
                 <div className="flex items-center gap-2"><Phone className="h-4 w-4" /> {car.owner_phone}</div>
-                <div className="flex items-center gap-2"><Calendar className="h-4 w-4" /> Brought in {format(new Date(car.date_in), "dd MMM yyyy")}</div>
+                <div className="flex items-center gap-2"><Calendar className="h-4 w-4" /> Brought in {formatDate(car.date_in, "dd MMM yyyy")}</div>
               </div>
             </div>
             <div className="flex flex-col items-end gap-2">
@@ -436,7 +445,7 @@ function PhotosSection({ carId }: { carId: string }) {
                     )}
                   </button>
                   <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-black/60 px-2 py-1 text-[11px] text-white">
-                    <span>{format(new Date(p.created_at), "dd MMM, HH:mm")}</span>
+                    <span>{formatDate(p.created_at, "dd MMM, HH:mm")}</span>
                     <button
                       type="button"
                       onClick={(e) => { e.stopPropagation(); setToDelete(p); }}
@@ -459,7 +468,7 @@ function PhotosSection({ carId }: { carId: string }) {
             <div className="space-y-2">
               <img src={viewer.url} alt="" className="max-h-[80vh] w-full rounded object-contain" />
               <p className="text-center text-xs text-muted-foreground">
-                Uploaded {format(new Date(viewer.date), "dd MMM yyyy 'at' HH:mm")}
+                Uploaded {formatDate(viewer.date, "dd MMM yyyy 'at' HH:mm")}
               </p>
             </div>
           )}
